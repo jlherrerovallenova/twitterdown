@@ -42,9 +42,21 @@ export const App: React.FC = () => {
         body: JSON.stringify({ url }),
       });
 
+      if (!res.ok) {
+        const errorText = await res.text();
+        let errorMsg = `Error del servidor (${res.status})`;
+        try {
+          const errJson = JSON.parse(errorText);
+          if (errJson.error) errorMsg = errJson.error;
+        } catch {
+          if (errorText) errorMsg = errorText.slice(0, 150);
+        }
+        throw new Error(errorMsg);
+      }
+
       const json = await res.json();
 
-      if (!res.ok || !json.success) {
+      if (!json.success) {
         throw new Error(json.error || 'No se pudo obtener el video del tweet especificado.');
       }
 

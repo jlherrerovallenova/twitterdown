@@ -472,6 +472,119 @@ export const SAMPLE_TWEETS: Record<string, TweetVideoData> = {
   },
 };
 
+function getSyndicationToken(id: string): string {
+  return ((Number(id) / 1e15) * Math.PI).toString(36).replace(/(0+|\.)/g, '');
+}
+
+interface SyndicationMedia {
+  type?: string;
+  media_url_https?: string;
+}
+
+interface SyndicationVariant {
+  src?: string;
+  type?: string;
+  bitrate?: number;
+}
+
+interface SyndicationTweet {
+  id_str?: string;
+  text?: string;
+  favorite_count?: number;
+  conversation_count?: number;
+  user?: {
+    name?: string;
+    screen_name?: string;
+    profile_image_url_https?: string;
+    verified?: boolean;
+    is_blue_verified?: boolean;
+  };
+  video?: {
+    poster?: string;
+    durationMillis?: number;
+    variants?: SyndicationVariant[];
+  };
+  mediaDetails?: Array<SyndicationMedia & { variants?: SyndicationVariant[]; poster?: string; durationMillis?: number }>;
+}
+
+async function extractWithSyndication(tweetId: string): Promise<TweetVideoData | null> {
+  try {
+    const token = getSyndicationToken(tweetId);
+    const res = await fetch(`https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&token=${token}`, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+    });
+
+    if (!res.ok) return null;
+    const tweet = (await res.json()) as SyndicationTweet;
+    if (!tweet) return null;
+
+    const video = tweet.video || (tweet.mediaDetails && tweet.mediaDetails.find((m) => m.type === 'video'));
+    if (!video || !video.variants) return null;
+
+    const formats: VideoFormat[] = [];
+    for (const v of video.variants) {
+      if (v.src && (!v.type || v.type.includes('mp4'))) {
+        const matchRes = v.src.match(/\/(\d+)x(\d+)\//);
+        const height = matchRes ? parseInt(matchRes[2], 10) : (v.bitrate ? Math.round(v.bitrate / 2500) : 720);
+        const quality =
+          height >= 1080 ? 'Full HD (1080p)' : height >= 720 ? 'HD (720p)' : height >= 480 ? 'SD (480p)' : `SD (${height}p)`;
+
+        formats.push({
+          id: `mp4-${height}-${v.bitrate || 0}`,
+          quality,
+          resolution: `${height}p`,
+          ext: 'mp4',
+          url: v.src,
+          hasAudio: true,
+          hasVideo: true,
+          bitrate: v.bitrate,
+        });
+      }
+    }
+
+    if (formats.length === 0) return null;
+
+    formats.sort((a, b) => {
+      const numA = parseInt(a.resolution, 10) || 0;
+      const numB = parseInt(b.resolution, 10) || 0;
+      if (numA !== numB) return numB - numA;
+      return (b.bitrate || 0) - (a.bitrate || 0);
+    });
+
+    formats.push({
+      id: 'audio-only',
+      quality: 'Solo Audio (MP3)',
+      resolution: 'Audio',
+      ext: 'mp3',
+      url: formats[0].url,
+      hasAudio: true,
+      hasVideo: false,
+    });
+
+    return {
+      id: tweet.id_str || tweetId,
+      url: `https://x.com/${tweet.user?.screen_name || 'i'}/status/${tweetId}`,
+      text: tweet.text || '',
+      author: {
+        name: tweet.user?.name || 'Twitter User',
+        screenName: `@${tweet.user?.screen_name || 'user'}`,
+        avatar: tweet.user?.profile_image_url_https || '',
+        verified: Boolean(tweet.user?.verified || tweet.user?.is_blue_verified),
+      },
+      thumbnail: video.poster || (tweet.mediaDetails && tweet.mediaDetails[0]?.media_url_https) || '',
+      duration: Math.round(video.durationMillis ? video.durationMillis / 1000 : 0),
+      likes: tweet.favorite_count,
+      retweets: tweet.conversation_count,
+      formats,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function extractVideo(inputUrl: string): Promise<TweetVideoData> {
   const trimmed = inputUrl.trim();
 
@@ -490,17 +603,25 @@ export async function extractVideo(inputUrl: string): Promise<TweetVideoData> {
     throw new Error('URL de Twitter / X no válida. Asegúrate de ingresar un enlace como https://x.com/usuario/status/123456');
   }
 
-  // 1. Attempt with yt-dlp
-  const normalizedUrl = `https://x.com/i/status/${tweetId}`;
-  const ytResult = await extractWithYtDlp(normalizedUrl);
-  if (ytResult && ytResult.formats.length > 0) {
-    return ytResult;
+  // 1. Direct Twitter Syndication CDN (ultra-fast, native Vercel serverless compatible)
+  const syndicationResult = await extractWithSyndication(tweetId);
+  if (syndicationResult && syndicationResult.formats.length > 0) {
+    return syndicationResult;
   }
 
-  // 2. Fallback to FixTweet
+  // 2. FixTweet API (fallback)
   const fixTweetResult = await extractWithFixTweet(tweetId);
   if (fixTweetResult && fixTweetResult.formats.length > 0) {
     return fixTweetResult;
+  }
+
+  // 3. Attempt with yt-dlp if running locally
+  if (!process.env.VERCEL) {
+    const normalizedUrl = `https://x.com/i/status/${tweetId}`;
+    const ytResult = await extractWithYtDlp(normalizedUrl);
+    if (ytResult && ytResult.formats.length > 0) {
+      return ytResult;
+    }
   }
 
   // If live tweet extraction couldn't find a video
