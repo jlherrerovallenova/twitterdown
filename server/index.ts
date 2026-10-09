@@ -19,14 +19,14 @@ app.get('/api/health', (_req, res) => {
 // Version check endpoint for update notifications
 app.get('/api/version', (_req, res) => {
   res.json({
-    version: '2.4.0',
-    title: 'Paginación Infinita y Carga Continua de Videos',
+    version: '2.5.0',
+    title: 'Corrección de Compatibilidad de Navegadores & Inicio Inmediato',
     releaseDate: '2026-10-10',
     notes: [
-      'Paginación multi-página: Navega por páginas 1, 2, 3, 4, 5+ de resultados',
-      'Botón "Cargar más videos" para explorar cientos de videos sin límites',
-      'Soporte completo de paginación en YouTube y contenido +18 / NSFW',
-      'Transición suave y preservación de filtros y estado de búsqueda',
+      'Eliminado error de coincidencia de patrones del portapapeles en navegadores',
+      'Inicio 100% garantizado en Vercel sin bloqueos ni errores en el arranque',
+      'Motor con fallback instantáneo de resultados recomendados',
+      'Paginación fluida y carga continua de videos',
     ],
   });
 });

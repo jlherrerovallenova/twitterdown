@@ -15,8 +15,34 @@ export const SmartClipboardBanner: React.FC<SmartClipboardBannerProps> = ({
 
   const checkClipboard = useCallback(async () => {
     try {
-      if (!navigator.clipboard?.readText) return;
-      const text = (await navigator.clipboard.readText()).trim();
+      if (
+        typeof window === 'undefined' ||
+        typeof navigator === 'undefined' ||
+        !navigator.clipboard ||
+        typeof navigator.clipboard.readText !== 'function'
+      ) {
+        return;
+      }
+
+      // Check permission state first if supported to avoid "string did not match pattern" or security errors
+      if (navigator.permissions && typeof navigator.permissions.query === 'function') {
+        try {
+          const perm = await navigator.permissions.query({ name: 'clipboard-read' as any });
+          if (perm.state !== 'granted') {
+            return;
+          }
+        } catch {
+          // Permissions API for clipboard-read unsupported or blocked; avoid automatic readText
+          return;
+        }
+      } else {
+        // Without explicit permission API, do not auto-read on mount to avoid DOMException
+        return;
+      }
+
+      const rawText = await navigator.clipboard.readText().catch(() => '');
+      const text = typeof rawText === 'string' ? rawText.trim() : '';
+      if (!text || text.length < 10) return;
 
       // Check if text is a valid Twitter or X status link
       const isTwitterLink =
@@ -27,19 +53,19 @@ export const SmartClipboardBanner: React.FC<SmartClipboardBannerProps> = ({
         setDetectedUrl(text);
       }
     } catch {
-      // Clipboard permission denied or unavailable
+      // Ignore all clipboard errors silently
     }
   }, [currentUrl, dismissedUrl]);
 
   useEffect(() => {
-    // Check on window focus and initial mount
+    // Only check clipboard on user window focus if permitted
     const handleFocus = () => {
-      checkClipboard();
+      try {
+        checkClipboard();
+      } catch {}
     };
 
     window.addEventListener('focus', handleFocus);
-    checkClipboard();
-
     return () => {
       window.removeEventListener('focus', handleFocus);
     };
@@ -81,7 +107,7 @@ export const SmartClipboardBanner: React.FC<SmartClipboardBannerProps> = ({
           </div>
           <div className="min-w-0">
             <p className="text-xs font-bold text-sky-950 flex items-center gap-1.5">
-              <span>Enlace de X detectado en tu portapapeles</span>
+              <span>Enlace detectado en tu portapapeles</span>
               <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" aria-hidden="true" />
             </p>
             <p className="text-xs text-sky-700 font-mono truncate max-w-xs sm:max-w-md">
@@ -95,7 +121,7 @@ export const SmartClipboardBanner: React.FC<SmartClipboardBannerProps> = ({
             type="button"
             onClick={handleApply}
             aria-label="Descargar enlace detectado"
-            className="px-3.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg shadow-sm transition-[background-color] duration-150 flex items-center gap-1.5"
+            className="px-3.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg shadow-sm transition-[background-color] duration-150 flex items-center gap-1.5 cursor-pointer"
           >
             <span>Descargar ahora</span>
             <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -103,10 +129,11 @@ export const SmartClipboardBanner: React.FC<SmartClipboardBannerProps> = ({
           <button
             type="button"
             onClick={handleDismiss}
-            aria-label="Descartar enlace detectado"
-            className="p-1.5 text-sky-600 hover:text-sky-800 hover:bg-sky-100 rounded-lg transition-[background-color,color] duration-150"
+            aria-label="Descartar aviso de portapapeles"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition"
+            title="Descartar"
           >
-            <X className="w-4 h-4" aria-hidden="true" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       </div>

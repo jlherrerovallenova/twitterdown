@@ -79,10 +79,13 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
       try {
         const res = await fetch(`/api/search/suggestions?q=${encodeURIComponent(inputValue)}`);
         if (res.ok) {
-          const data = await res.json();
-          if (data.suggestions) {
-            setSuggestions(data.suggestions);
-          }
+          const text = await res.text();
+          try {
+            const data = JSON.parse(text);
+            if (data && Array.isArray(data.suggestions)) {
+              setSuggestions(data.suggestions);
+            }
+          } catch {}
         }
       } catch {
         // Fallback gracefully

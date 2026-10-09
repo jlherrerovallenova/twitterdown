@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, X, CheckCircle, RefreshCw } from 'lucide-react';
 
-export const CURRENT_APP_VERSION = '2.4.0';
+export const CURRENT_APP_VERSION = '2.5.0';
 
 interface VersionInfo {
   version: string;
@@ -20,18 +20,21 @@ export const NewVersionPopup: React.FC = () => {
     const lastSeenVersion = localStorage.getItem('omni_last_seen_version');
 
     fetch('/api/version')
-      .then((res) => res.json())
-      .then((data: VersionInfo) => {
-        if (data && data.version) {
-          setVersionInfo(data);
-          // Show popup if new version or first time seeing 2.1.0
-          if (lastSeenVersion !== data.version) {
-            // Small delay for gentle appearance after page loads
-            const timer = setTimeout(() => {
-              setIsVisible(true);
-            }, 1000);
-            return () => clearTimeout(timer);
+      .then((res) => res.text())
+      .then((text) => {
+        try {
+          const data: VersionInfo = JSON.parse(text);
+          if (data && data.version) {
+            setVersionInfo(data);
+            if (lastSeenVersion !== data.version) {
+              const timer = setTimeout(() => {
+                setIsVisible(true);
+              }, 1000);
+              return () => clearTimeout(timer);
+            }
           }
+        } catch {
+          // Fallback if not json
         }
       })
       .catch(() => {

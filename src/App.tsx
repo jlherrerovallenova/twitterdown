@@ -116,20 +116,26 @@ export const App: React.FC = () => {
         });
 
         const res = await fetch(`/api/search?${params.toString()}`);
-        const data = await res.json();
-
-        if (!res.ok || !data.success) {
-          throw new Error(data.error || 'Error al buscar videos.');
+        let data: any;
+        try {
+          const text = await res.text();
+          data = JSON.parse(text);
+        } catch {
+          throw new Error(`Error en la respuesta del servidor (${res.status})`);
         }
 
-        const newResults = data.results || [];
+        if (!res.ok || !data.success) {
+          throw new Error(data?.error || 'Error al buscar videos.');
+        }
+
+        const newResults = Array.isArray(data.results) ? data.results : [];
         if (append) {
           setSearchResults((prev) => [...prev, ...newResults]);
         } else {
           setSearchResults(newResults);
         }
 
-        setHasMore(data.hasMore !== undefined ? data.hasMore : newResults.length >= 8);
+        setHasMore(data.hasMore !== undefined ? Boolean(data.hasMore) : newResults.length >= 8);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'No se pudo conectar con el servidor de búsqueda.';
         setSearchError(msg);
