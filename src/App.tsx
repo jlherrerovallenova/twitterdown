@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
+import { SmartClipboardBanner } from './components/SmartClipboardBanner';
 import { UrlInputForm } from './components/UrlInputForm';
 import { VideoCard } from './components/VideoCard';
 import { DownloadHistory } from './components/DownloadHistory';
@@ -93,7 +94,9 @@ export const App: React.FC = () => {
 
       <main className="flex-1 pb-16">
         {/* Hero Section */}
-        <div className="pt-10 sm:pt-16 pb-8 px-4 text-center max-w-4xl mx-auto">
+        <div className="pt-8 sm:pt-12 pb-8 px-4 text-center max-w-4xl mx-auto">
+          <SmartClipboardBanner onSelectUrl={handleSearch} currentUrl={videoData?.url} />
+
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight sm:leading-none">
             Descargar Videos de <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-sky-500 via-sky-600 to-blue-600 bg-clip-text text-transparent">

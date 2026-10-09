@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import fs from 'node:fs';
 import { extractVideo, SAMPLE_TWEETS } from './extractor';
+import { processVideoTrim } from './trimmer';
 
 const app = express();
 const PORT = process.env.PORT || 3005;
@@ -98,6 +100,50 @@ app.get('/api/download', async (req, res) => {
     streamNext();
   } catch (err) {
     res.status(500).send('Error interno en la descarga');
+  }
+});
+
+// Video Trimming & GIF Conversion endpoint
+app.get('/api/trim', async (req, res) => {
+  try {
+    const videoUrl = req.query.url as string;
+    const start = parseFloat(req.query.start as string) || 0;
+    const end = parseFloat(req.query.end as string) || 0;
+    const format = (req.query.format === 'gif' ? 'gif' : 'mp4') as 'mp4' | 'gif';
+    const requestedName = (req.query.filename as string) || `twitter_clip.${format}`;
+
+    if (!videoUrl || end <= start) {
+      res.status(400).send('Parámetros de recorte inválidos.');
+      return;
+    }
+
+    const safeFilename = requestedName.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+
+    const result = await processVideoTrim({
+      videoUrl,
+      start,
+      end,
+      format,
+      outputFilename: safeFilename,
+    });
+
+    res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}"`);
+    res.setHeader('Content-Type', result.contentType);
+
+    const stream = fs.createReadStream(result.filePath);
+    stream.pipe(res);
+
+    stream.on('end', () => {
+      result.cleanup();
+    });
+
+    stream.on('error', () => {
+      result.cleanup();
+      res.end();
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Error al procesar el recorte';
+    res.status(500).send(msg);
   }
 });
 

@@ -6,7 +6,9 @@ Una aplicación web moderna, ultrarrápida y en **modo claro** para descargar vi
 
 ## ✨ Características Principales
 
-- ☀️ **Modo Claro Diseñado al Detalle:** Paleta limpia y luminosa con blanco `#ffffff`, slate suave `#f8fafc` y toques azul Twitter `#1D9BF0`.
+- ☀️ **Modo Claro Minimalista:** Paleta limpia y luminosa con blanco `#ffffff`, slate suave `#f8fafc` y toques azul Twitter `#1D9BF0`.
+- ✂️ **Recortador de Video y Creador de GIF Integrado:** Selecciona puntos de inicio y fin en el reproductor para descargar clips MP4 o generar GIFs animados de alta calidad con FFmpeg.
+- ⚡ **Detección Inteligente del Portapapeles (Smart Auto-Paste):** Al volver a la pestaña de la app, detecta automáticamente si has copiado un enlace de X / Twitter y ofrece descargarlo con 1 clic.
 - 📺 **Selector de Calidad Multi-Resolución:**
   - Full HD (1080p MP4)
   - HD (720p MP4)
@@ -14,11 +16,6 @@ Una aplicación web moderna, ultrarrápida y en **modo claro** para descargar vi
   - Pista de solo audio (MP3/M4A)
 - 🚀 **Descargas Directas sin CORS:** Endpoint de streaming proxy (`/api/download`) que entrega el archivo con encabezados `Content-Disposition: attachment` para descarga nativa inmediata en el navegador.
 - 🖼️ **Descarga de Miniatura:** Botón para guardar la imagen de portada o fotograma de vista previa.
-- 📋 **Acciones Rápidas:**
-  - Pegar enlace desde el portapapeles con un clic.
-  - Copiar enlace directo de descarga.
-  - Abrir el tweet original en X.
-- 🧪 **Demos Integrados:** 3 tweets de prueba preconfigurados para verificar la aplicación de inmediato sin necesidad de buscar URLs.
 - 🕒 **Historial Local de Descargas:** Almacenamiento en `localStorage` con re-descarga y eliminación individual o total.
 - 🩺 **React Doctor Score 100 / 100:** Sin problemas de accesibilidad, puras mutaciones de estado, transiciones CSS optimizadas y componentes modulares.
 

@@ -1,18 +1,25 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Film, Music, Image as ImageIcon } from 'lucide-react';
 import { VideoFormat } from '../types';
+import { VideoTrimmer } from './VideoTrimmer';
 
 interface VideoPlayerPreviewProps {
   selectedFormat?: VideoFormat;
   thumbnail: string;
+  duration: number;
+  title: string;
   onDownloadThumbnail: () => void;
 }
 
 export const VideoPlayerPreview: React.FC<VideoPlayerPreviewProps> = ({
   selectedFormat,
   thumbnail,
+  duration,
+  title,
   onDownloadThumbnail,
 }) => {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
   return (
     <div className="flex flex-col justify-between">
       <div>
@@ -35,6 +42,7 @@ export const VideoPlayerPreview: React.FC<VideoPlayerPreviewProps> = ({
         <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-900 shadow-md border border-slate-200">
           {selectedFormat?.hasVideo ? (
             <video
+              ref={videoRef}
               key={selectedFormat.url}
               src={selectedFormat.url}
               poster={thumbnail}
@@ -53,6 +61,15 @@ export const VideoPlayerPreview: React.FC<VideoPlayerPreviewProps> = ({
             </div>
           )}
         </div>
+
+        {selectedFormat?.hasVideo && (
+          <VideoTrimmer
+            videoUrl={selectedFormat.url}
+            duration={duration}
+            title={title}
+            videoRef={videoRef}
+          />
+        )}
       </div>
 
       <p className="text-[11px] text-slate-400 mt-2 text-center">

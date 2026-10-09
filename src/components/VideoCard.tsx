@@ -163,6 +163,8 @@ export const VideoCard: React.FC<VideoCardProps> = ({ data, onDownloadCompleted 
             <VideoPlayerPreview
               selectedFormat={selectedFormat}
               thumbnail={data.thumbnail}
+              duration={data.duration}
+              title={data.text || data.author.name}
               onDownloadThumbnail={handleDownloadThumbnail}
             />
           </div>
