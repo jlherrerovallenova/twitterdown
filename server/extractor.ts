@@ -479,11 +479,23 @@ function getSyndicationToken(id: string): string {
 interface SyndicationMedia {
   type?: string;
   media_url_https?: string;
+  video_info?: {
+    duration_millis?: number;
+    variants?: Array<{
+      url?: string;
+      src?: string;
+      content_type?: string;
+      type?: string;
+      bitrate?: number;
+    }>;
+  };
 }
 
 interface SyndicationVariant {
   src?: string;
+  url?: string;
   type?: string;
+  content_type?: string;
   bitrate?: number;
 }
 
@@ -492,6 +504,7 @@ interface SyndicationTweet {
   text?: string;
   favorite_count?: number;
   conversation_count?: number;
+  created_at?: string;
   user?: {
     name?: string;
     screen_name?: string;
@@ -501,10 +514,11 @@ interface SyndicationTweet {
   };
   video?: {
     poster?: string;
+    durationMs?: number;
     durationMillis?: number;
     variants?: SyndicationVariant[];
   };
-  mediaDetails?: Array<SyndicationMedia & { variants?: SyndicationVariant[]; poster?: string; durationMillis?: number }>;
+  mediaDetails?: SyndicationMedia[];
 }
 
 async function extractWithSyndication(tweetId: string): Promise<TweetVideoData | null> {
@@ -521,13 +535,33 @@ async function extractWithSyndication(tweetId: string): Promise<TweetVideoData |
     const tweet = (await res.json()) as SyndicationTweet;
     if (!tweet) return null;
 
-    const video = tweet.video || (tweet.mediaDetails && tweet.mediaDetails.find((m) => m.type === 'video'));
-    if (!video || !video.variants) return null;
+    // Collect all variants
+    const rawVariants: SyndicationVariant[] = [];
+    if (tweet.video?.variants) {
+      for (const v of tweet.video.variants) {
+        rawVariants.push(v);
+      }
+    }
+    if (tweet.mediaDetails) {
+      for (const m of tweet.mediaDetails) {
+        if (m.video_info?.variants) {
+          for (const v of m.video_info.variants) {
+            rawVariants.push(v);
+          }
+        }
+      }
+    }
 
     const formats: VideoFormat[] = [];
-    for (const v of video.variants) {
-      if (v.src && (!v.type || v.type.includes('mp4'))) {
-        const matchRes = v.src.match(/\/(\d+)x(\d+)\//);
+    const seenUrls = new Set<string>();
+
+    for (const v of rawVariants) {
+      const vUrl = v.src || v.url;
+      const vType = v.type || v.content_type || '';
+
+      if (vUrl && (!vType || vType.includes('mp4')) && !seenUrls.has(vUrl)) {
+        seenUrls.add(vUrl);
+        const matchRes = vUrl.match(/\/(\d+)x(\d+)\//);
         const height = matchRes ? parseInt(matchRes[2], 10) : (v.bitrate ? Math.round(v.bitrate / 2500) : 720);
         const quality =
           height >= 1080 ? 'Full HD (1080p)' : height >= 720 ? 'HD (720p)' : height >= 480 ? 'SD (480p)' : `SD (${height}p)`;
@@ -537,7 +571,7 @@ async function extractWithSyndication(tweetId: string): Promise<TweetVideoData |
           quality,
           resolution: `${height}p`,
           ext: 'mp4',
-          url: v.src,
+          url: vUrl,
           hasAudio: true,
           hasVideo: true,
           bitrate: v.bitrate,
@@ -547,6 +581,7 @@ async function extractWithSyndication(tweetId: string): Promise<TweetVideoData |
 
     if (formats.length === 0) return null;
 
+    // Sort descending by resolution and bitrate
     formats.sort((a, b) => {
       const numA = parseInt(a.resolution, 10) || 0;
       const numB = parseInt(b.resolution, 10) || 0;
@@ -564,6 +599,12 @@ async function extractWithSyndication(tweetId: string): Promise<TweetVideoData |
       hasVideo: false,
     });
 
+    const durationRaw =
+      tweet.video?.durationMs ||
+      tweet.video?.durationMillis ||
+      tweet.mediaDetails?.[0]?.video_info?.duration_millis ||
+      0;
+
     return {
       id: tweet.id_str || tweetId,
       url: `https://x.com/${tweet.user?.screen_name || 'i'}/status/${tweetId}`,
@@ -574,8 +615,8 @@ async function extractWithSyndication(tweetId: string): Promise<TweetVideoData |
         avatar: tweet.user?.profile_image_url_https || '',
         verified: Boolean(tweet.user?.verified || tweet.user?.is_blue_verified),
       },
-      thumbnail: video.poster || (tweet.mediaDetails && tweet.mediaDetails[0]?.media_url_https) || '',
-      duration: Math.round(video.durationMillis ? video.durationMillis / 1000 : 0),
+      thumbnail: tweet.video?.poster || tweet.mediaDetails?.[0]?.media_url_https || '',
+      duration: Math.round(durationRaw / 1000),
       likes: tweet.favorite_count,
       retweets: tweet.conversation_count,
       formats,

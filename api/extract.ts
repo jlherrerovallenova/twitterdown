@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { extractVideo } from '../server/extractor';
+import { extractVideo } from './extractor';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS
