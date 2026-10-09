@@ -6,6 +6,8 @@ import {
   Clock,
   TrendingUp,
   RotateCcw,
+  ShieldCheck,
+  ShieldAlert,
 } from 'lucide-react';
 import { SearchFilters } from '../types';
 
@@ -30,7 +32,7 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
     <div className="w-full bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm mb-6 transition">
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         {/* Left: Filter Controls */}
-        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
           {/* Filter Icon Label */}
           <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider pr-2 border-r border-slate-200">
             <SlidersHorizontal className="w-4 h-4 text-sky-600" />
@@ -41,17 +43,17 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
           <div className="flex items-center bg-slate-100/90 p-1 rounded-xl">
             <button
               onClick={() => onChangeFilters({ platform: 'all' })}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg transition ${
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition ${
                 filters.platform === 'all'
                   ? 'bg-white text-sky-700 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Todas las Fuentes
+              Todas
             </button>
             <button
               onClick={() => onChangeFilters({ platform: 'youtube' })}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg transition ${
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition ${
                 filters.platform === 'youtube'
                   ? 'bg-white text-red-600 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -61,7 +63,7 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
             </button>
             <button
               onClick={() => onChangeFilters({ platform: 'twitter' })}
-              className={`px-3 py-1 text-xs font-semibold rounded-lg transition ${
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition ${
                 filters.platform === 'twitter'
                   ? 'bg-white text-sky-600 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -69,7 +71,40 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
             >
               X / Twitter
             </button>
+            <button
+              onClick={() => onChangeFilters({ platform: 'nsfw', nsfw: true })}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition ${
+                filters.platform === 'nsfw'
+                  ? 'bg-rose-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-rose-600'
+              }`}
+            >
+              🔞 +18
+            </button>
           </div>
+
+          {/* SafeSearch / NSFW Toggle */}
+          <button
+            onClick={() => onChangeFilters({ nsfw: !filters.nsfw })}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
+              filters.nsfw
+                ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+            }`}
+            title={filters.nsfw ? 'Modo +18 activo (Resultados sin censura)' : 'Filtro seguro activado'}
+          >
+            {filters.nsfw ? (
+              <>
+                <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
+                <span>Modo +18: ON</span>
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>SafeSearch</span>
+              </>
+            )}
+          </button>
 
           {/* Duration Filter */}
           <div className="flex items-center gap-1.5">
@@ -79,7 +114,7 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
               onChange={(e) => onChangeFilters({ duration: e.target.value as SearchFilters['duration'] })}
               className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium rounded-xl px-2.5 py-1.5 focus:outline-hidden focus:border-sky-500 transition cursor-pointer"
             >
-              <option value="all">Cualquier duración</option>
+              <option value="all">Duración (Todas)</option>
               <option value="short">Cortos (&lt; 2 min)</option>
               <option value="medium">Medios (2 - 10 min)</option>
               <option value="long">Largos (&gt; 10 min)</option>
@@ -102,10 +137,10 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
           </div>
 
           {/* Reset Filters button */}
-          {(filters.platform !== 'all' || filters.duration !== 'all' || filters.sortBy !== 'relevance') && (
+          {(filters.platform !== 'all' || filters.duration !== 'all' || filters.sortBy !== 'relevance' || filters.nsfw) && (
             <button
               onClick={onResetFilters}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-semibold transition"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-xs font-semibold transition"
               title="Restablecer filtros"
             >
               <RotateCcw className="w-3 h-3" />
@@ -119,10 +154,10 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
           <span className="text-xs font-semibold text-slate-500">
             {totalResults > 0 ? (
               <>
-                <span className="text-sky-600 font-bold">{totalResults}</span> videos encontrados
+                <span className="text-sky-600 font-bold">{totalResults}</span> videos
               </>
             ) : (
-              'Búsqueda lista'
+              'Listo'
             )}
           </span>
 

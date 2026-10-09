@@ -19,15 +19,15 @@ app.get('/api/health', (_req, res) => {
 // Version check endpoint for update notifications
 app.get('/api/version', (_req, res) => {
   res.json({
-    version: '2.1.0',
-    title: 'Buscador Pro de Videos por Palabras Clave y Etiquetas',
+    version: '2.2.0',
+    title: 'Soporte Completo de Búsquedas NSFW / +18 y Multi-Fuente',
     releaseDate: '2026-10-10',
     notes: [
-      'Buscador universal de videos por keywords y #hashtags',
-      'Nube interactiva de tendencias y categorías rápidas',
-      'Filtros por plataforma, duración y ordenación',
-      'Reproductor modal integrado con descarga 1080p FHD y MP3',
-      'Gestor de favoritos y recortador de clips/GIFs',
+      'Motor dedicado para búsquedas y etiquetas +18 / NSFW sin censura',
+      'Interruptor directo de SafeSearch / Modo +18 en la barra de filtros',
+      'Nueva categoría rápida "🔞 Adultos & +18" con tendencias y tags',
+      'Reproductor modal compatible con streams y embeds directos',
+      'Detección inteligente y enrutamiento automático de términos para adultos',
     ],
   });
 });
@@ -40,7 +40,8 @@ app.get('/api/search/categories', (_req, res) => {
 // Auto-suggestions by query
 app.get('/api/search/suggestions', (req, res) => {
   const query = (req.query.q as string) || '';
-  const suggestions = getSearchSuggestions(query);
+  const isNsfw = req.query.nsfw === 'true';
+  const suggestions = getSearchSuggestions(query, isNsfw);
   res.json({ success: true, suggestions });
 });
 
@@ -56,6 +57,7 @@ app.get('/api/search', async (req, res) => {
     const platform = (req.query.platform as string) || 'all';
     const duration = (req.query.duration as 'all' | 'short' | 'medium' | 'long') || 'all';
     const sortBy = (req.query.sortBy as 'relevance' | 'views' | 'date' | 'duration_asc' | 'duration_desc') || 'relevance';
+    const nsfw = req.query.nsfw === 'true' || platform === 'nsfw';
     const limit = parseInt(req.query.limit as string) || 24;
 
     const results = await searchVideos({
@@ -63,6 +65,7 @@ app.get('/api/search', async (req, res) => {
       platform,
       duration,
       sortBy,
+      nsfw,
       limit,
     });
 

@@ -87,8 +87,9 @@ export const VideoModalPlayer: React.FC<VideoModalPlayerProps> = ({
     }
   };
 
-  // Helper to extract YouTube video embed ID if applicable
-  const getEmbedUrl = (url: string) => {
+  // Helper to extract video embed ID if applicable
+  const getEmbedUrl = (url: string, explicitEmbed?: string) => {
+    if (explicitEmbed) return explicitEmbed;
     const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
     if (ytMatch) {
       return `https://www.youtube-nocookie.com/embed/${ytMatch[1]}?autoplay=1&rel=0`;
@@ -96,7 +97,7 @@ export const VideoModalPlayer: React.FC<VideoModalPlayerProps> = ({
     return null;
   };
 
-  const embedUrl = getEmbedUrl(item.url);
+  const embedUrl = getEmbedUrl(item.url, item.embedUrl);
 
   // Best stream video URL if available
   const directMp4Url = extractedData?.formats?.find((f) => f.hasVideo && f.url)?.url;

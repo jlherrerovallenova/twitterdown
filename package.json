@@ -1,6 +1,6 @@
 {
   "name": "omnivideo-downloader-search",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Buscador profesional de videos por palabras clave/etiquetas y descargador HD",
   "type": "module",
   "scripts": {

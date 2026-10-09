@@ -100,6 +100,7 @@ export const App: React.FC = () => {
         platform: currentFilters.platform,
         duration: currentFilters.duration,
         sortBy: currentFilters.sortBy,
+        nsfw: currentFilters.nsfw || currentFilters.platform === 'nsfw' ? 'true' : 'false',
         limit: '28',
       });
 
@@ -137,6 +138,7 @@ export const App: React.FC = () => {
       platform: 'all',
       duration: 'all',
       sortBy: 'relevance',
+      nsfw: false,
     };
     setFilters(defaultFilters);
     performSearch(searchQuery, defaultFilters);
@@ -269,9 +271,18 @@ export const App: React.FC = () => {
           <div className="w-full">
             {/* Search Hero Area */}
             <SearchHero
-              onSearch={(q) => performSearch(q)}
+              onSearch={(q, isNsfw) => {
+                if (isNsfw !== undefined) {
+                  const nextFilters = { ...filters, nsfw: isNsfw, platform: isNsfw ? 'nsfw' : (filters.platform === 'nsfw' ? 'all' : filters.platform) };
+                  setFilters(nextFilters);
+                  performSearch(q, nextFilters);
+                } else {
+                  performSearch(q);
+                }
+              }}
               currentQuery={searchQuery}
               isLoading={isSearching}
+              isNsfw={filters.nsfw}
             />
 
             {/* Results & Filters Container */}

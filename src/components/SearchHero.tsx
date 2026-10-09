@@ -14,13 +14,15 @@ import {
   TrendingUp,
   Hash,
   ArrowRight,
+  Lock,
 } from 'lucide-react';
 import { CategoryPreset } from '../types';
 
 interface SearchHeroProps {
-  onSearch: (query: string) => void;
+  onSearch: (query: string, isNsfw?: boolean) => void;
   currentQuery: string;
   isLoading: boolean;
+  isNsfw?: boolean;
 }
 
 const CATEGORIES: CategoryPreset[] = [
@@ -32,6 +34,7 @@ const CATEGORIES: CategoryPreset[] = [
   { key: 'cinema', label: 'Cine & Trailers', icon: 'Film', query: 'official trailer peliculas estrenos', tags: ['#Cine', '#Trailer', '#Estrenos'] },
   { key: 'tech', label: 'Programación & Tech', icon: 'Code2', query: 'programacion desarrollo software tutorial', tags: ['#Programacion', '#Tech', '#Python'] },
   { key: 'memes', label: 'Memes & Humor', icon: 'Smile', query: 'memes videos graciosos humor shorts', tags: ['#Memes', '#Humor', '#Risas'] },
+  { key: 'nsfw', label: '🔞 Adultos & +18', icon: 'Lock', query: 'top amateur trending', tags: ['#NSFW', '#Adult', '#18Plus'], isNsfw: true },
 ];
 
 const POPULAR_TAGS = [
@@ -116,7 +119,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
   const handleCategoryClick = (cat: CategoryPreset) => {
     setActiveCategory(cat.key);
     setInputValue(cat.query);
-    onSearch(cat.query);
+    onSearch(cat.query, cat.isNsfw);
   };
 
   const handleTagClick = (tag: string) => {
@@ -134,6 +137,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
       case 'Film': return <Film className="w-4 h-4 text-rose-500" />;
       case 'Code2': return <Code2 className="w-4 h-4 text-sky-500" />;
       case 'Smile': return <Smile className="w-4 h-4 text-yellow-500" />;
+      case 'Lock': return <Lock className="w-4 h-4 text-rose-500" />;
       default: return <Sparkles className="w-4 h-4 text-sky-500" />;
     }
   };

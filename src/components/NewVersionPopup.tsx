@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, X, CheckCircle, RefreshCw } from 'lucide-react';
 
-export const CURRENT_APP_VERSION = '2.1.0';
+export const CURRENT_APP_VERSION = '2.2.0';
 
 interface VersionInfo {
   version: string;

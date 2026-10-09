@@ -50,12 +50,14 @@ export interface SearchResultItem {
   durationFormatted: string;
   uploader: string;
   uploaderAvatar?: string;
-  platform: 'youtube' | 'twitter' | 'tiktok' | 'reddit' | 'other';
+  platform: 'youtube' | 'twitter' | 'tiktok' | 'reddit' | 'nsfw' | 'other';
   views?: number;
   viewsFormatted?: string;
   uploadedAt?: string;
   url: string;
+  embedUrl?: string;
   tags: string[];
+  isNsfw?: boolean;
 }
 
 export interface SearchFilters {
@@ -63,6 +65,7 @@ export interface SearchFilters {
   platform: string;
   duration: 'all' | 'short' | 'medium' | 'long';
   sortBy: 'relevance' | 'views' | 'date' | 'duration_asc' | 'duration_desc';
+  nsfw?: boolean;
 }
 
 export interface CategoryPreset {
@@ -71,6 +74,7 @@ export interface CategoryPreset {
   icon: string;
   query: string;
   tags: string[];
+  isNsfw?: boolean;
 }
 
 export interface FavoriteVideo {
@@ -84,4 +88,5 @@ export interface FavoriteVideo {
   platform: string;
   savedAt: number;
   tags?: string[];
+  isNsfw?: boolean;
 }
