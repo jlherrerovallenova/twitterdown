@@ -1,5 +1,3 @@
-import { spawn } from 'node:child_process';
-
 export interface SearchResultItem {
   id: string;
   title: string;
@@ -50,6 +48,15 @@ export function formatDuration(seconds: number): string {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
+export function parseDurationSec(durationStr?: string): number {
+  if (!durationStr) return 0;
+  const parts = durationStr.split(':').map(Number);
+  if (parts.some(isNaN)) return 0;
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  return parts[0] || 0;
+}
+
 // Helper to format views number nicely
 export function formatViews(views?: number): string {
   if (views === undefined || views === null || isNaN(views)) return '';
@@ -94,6 +101,31 @@ function extractTags(title: string, description?: string, explicitTags?: string[
       if (tag.length > 2 && tag.length < 25) {
         set.add(tag);
       }
+    }
+  }
+
+  // Common keyword tags
+  const keywordMap: Record<string, string> = {
+    python: '#Python',
+    ia: '#IA',
+    ai: '#AI',
+    gaming: '#Gaming',
+    musica: '#Musica',
+    music: '#Music',
+    trailer: '#Trailer',
+    meme: '#Meme',
+    futbol: '#Futbol',
+    tutorial: '#Tutorial',
+    tech: '#Tech',
+    clips: '#Clips',
+    shorts: '#Shorts',
+    viral: '#Viral',
+  };
+
+  const lower = fullText.toLowerCase();
+  for (const [key, tag] of Object.entries(keywordMap)) {
+    if (lower.includes(key)) {
+      set.add(tag);
     }
   }
 
@@ -153,7 +185,7 @@ export const CATEGORY_PRESETS: Record<string, { label: string; icon: string; que
   nsfw: {
     label: '🔞 Adultos & +18',
     icon: 'Lock',
-    query: 'top amateur viral',
+    query: 'top amateur viral trending',
     tags: ['#NSFW', '#Adult', '#18Plus', '#Amateur', '#Trending'],
     isNsfw: true,
   },
@@ -195,7 +227,91 @@ export function getSearchSuggestions(query: string, isNsfw = false): string[] {
   return Array.from(new Set(matches)).slice(0, 8);
 }
 
-// Search NSFW adult videos using public high-speed API
+// 1. Pure TypeScript / Node.js YouTube Search (100% Serverless compatible with Vercel)
+async function searchPureYouTube(options: SearchOptions): Promise<SearchResultItem[]> {
+  const cleanQuery = options.query.replace(/#/g, '').trim();
+  const limit = Math.min(options.limit || 24, 35);
+
+  try {
+    const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanQuery)}`;
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+      },
+    });
+
+    if (!res.ok) return [];
+
+    const html = await res.text();
+    const match = html.match(/var ytInitialData = ({.*?});<\/script>/) || html.match(/ytInitialData\s*=\s*({.+?});/);
+    if (!match) return [];
+
+    const data = JSON.parse(match[1]);
+    const contents = data.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents?.[0]?.itemSectionRenderer?.contents || [];
+
+    const results: SearchResultItem[] = [];
+
+    for (const item of contents) {
+      if (!item.videoRenderer) continue;
+      const v = item.videoRenderer;
+      if (!v.videoId) continue;
+
+      const durationText = v.lengthText?.simpleText || '00:00';
+      const durationSec = parseDurationSec(durationText);
+
+      // Duration filter
+      if (options.duration === 'short' && durationSec > 120) continue;
+      if (options.duration === 'medium' && (durationSec <= 120 || durationSec > 600)) continue;
+      if (options.duration === 'long' && durationSec <= 600) continue;
+
+      const title = v.title?.runs?.[0]?.text || 'Video de YouTube';
+      const uploader = v.ownerText?.runs?.[0]?.text || 'Creador de YouTube';
+      const viewsText = v.viewCountText?.simpleText || '';
+      const viewsMatch = viewsText.match(/[\d\.]+/);
+      const views = viewsMatch ? parseInt(viewsMatch[0].replace(/\./g, '')) : undefined;
+
+      let thumb = `https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg`;
+      if (v.thumbnail?.thumbnails && Array.isArray(v.thumbnail.thumbnails) && v.thumbnail.thumbnails.length > 0) {
+        thumb = v.thumbnail.thumbnails[v.thumbnail.thumbnails.length - 1].url;
+      }
+
+      const tags = extractTags(title, v.detailedMetadataSnippets?.[0]?.snippetText?.runs?.[0]?.text);
+
+      results.push({
+        id: v.videoId,
+        title,
+        description: v.detailedMetadataSnippets?.[0]?.snippetText?.runs?.[0]?.text,
+        thumbnail: thumb,
+        duration: durationSec,
+        durationFormatted: durationText,
+        uploader,
+        platform: 'youtube',
+        views,
+        viewsFormatted: viewsText ? viewsText.split(' ')[0] : undefined,
+        uploadedAt: v.publishedTimeText?.simpleText,
+        url: `https://www.youtube.com/watch?v=${v.videoId}`,
+        tags: tags.length > 0 ? tags : [`#${cleanQuery.split(' ')[0]}`],
+      });
+
+      if (results.length >= limit) break;
+    }
+
+    // Sort
+    if (options.sortBy === 'duration_asc') {
+      results.sort((a, b) => a.duration - b.duration);
+    } else if (options.sortBy === 'duration_desc') {
+      results.sort((a, b) => b.duration - a.duration);
+    }
+
+    return results;
+  } catch (err) {
+    console.error('[SearchEngine] Pure YouTube Search error:', err);
+    return [];
+  }
+}
+
+// 2. Search NSFW adult videos using public high-speed API (100% Serverless compatible with Vercel)
 async function searchNsfwVideos(options: SearchOptions): Promise<SearchResultItem[]> {
   const cleanQuery = options.query.replace(/#/g, '').trim() || 'trending';
   const limit = Math.min(options.limit || 24, 40);
@@ -266,7 +382,6 @@ async function searchNsfwVideos(options: SearchOptions): Promise<SearchResultIte
       });
     }
 
-    // Sort by duration if requested
     if (options.sortBy === 'duration_asc') {
       items.sort((a, b) => a.duration - b.duration);
     } else if (options.sortBy === 'duration_desc') {
@@ -280,7 +395,7 @@ async function searchNsfwVideos(options: SearchOptions): Promise<SearchResultIte
   }
 }
 
-// Perform fast multi-platform video search
+// Perform fast multi-platform video search (Serverless & Express native)
 export async function searchVideos(options: SearchOptions): Promise<SearchResultItem[]> {
   const cleanQuery = options.query.trim();
   if (!cleanQuery) return [];
@@ -295,7 +410,7 @@ export async function searchVideos(options: SearchOptions): Promise<SearchResult
     return cached.results;
   }
 
-  // If NSFW search is triggered, query adult video engine
+  // 1. If NSFW search is triggered, query adult video engine
   if (isNsfw) {
     const nsfwResults = await searchNsfwVideos(options);
     if (nsfwResults.length > 0) {
@@ -304,133 +419,19 @@ export async function searchVideos(options: SearchOptions): Promise<SearchResult
     }
   }
 
-  return new Promise((resolve) => {
-    let searchQuery = cleanQuery;
-    if (cleanQuery.startsWith('#')) {
-      searchQuery = cleanQuery.replace('#', '') + ' hashtag';
-    }
+  // 2. Perform zero-dependency Pure YouTube search (Runs in 500ms on Vercel)
+  const ytResults = await searchPureYouTube(options);
+  if (ytResults.length > 0) {
+    searchCache.set(cacheKey, { timestamp: Date.now(), results: ytResults });
+    return ytResults;
+  }
 
-    const ytSearchQuery = `ytsearch${limit}:${searchQuery}`;
+  // 3. If standard search returned empty and query might be NSFW, fallback to adult engine
+  const fallbackNsfw = await searchNsfwVideos(options);
+  if (fallbackNsfw.length > 0) {
+    searchCache.set(cacheKey, { timestamp: Date.now(), results: fallbackNsfw });
+    return fallbackNsfw;
+  }
 
-    const args = [
-      '-m',
-      'yt_dlp',
-      '--dump-json',
-      '--flat-playlist',
-      '--no-warnings',
-      '--no-check-certificates',
-      '--default-search',
-      'ytsearch',
-      ytSearchQuery,
-    ];
-
-    const child = spawn('python', args);
-
-    let stdout = '';
-    let stderr = '';
-
-    child.stdout.on('data', (chunk) => {
-      stdout += chunk.toString();
-    });
-
-    child.stderr.on('data', (chunk) => {
-      stderr += chunk.toString();
-    });
-
-    const timeout = setTimeout(() => {
-      child.kill();
-      resolve([]);
-    }, 12000);
-
-    child.on('close', async (code) => {
-      clearTimeout(timeout);
-
-      if (code !== 0 && !stdout.trim()) {
-        console.warn(`[SearchEngine] yt-dlp exited with code ${code}: ${stderr.slice(0, 100)}`);
-        // If standard search returned empty and query might have been restricted, try NSFW engine
-        const fallbackNsfw = await searchNsfwVideos(options);
-        resolve(fallbackNsfw);
-        return;
-      }
-
-      try {
-        const rawLines = stdout.trim().split('\n').filter((l) => l.trim().length > 0);
-        const results: SearchResultItem[] = [];
-
-        for (const line of rawLines) {
-          try {
-            const raw = JSON.parse(line);
-            if (!raw || !raw.id) continue;
-
-            const durationSec = Math.round(raw.duration || 0);
-
-            // Filter duration if requested
-            if (options.duration === 'short' && durationSec > 120) continue;
-            if (options.duration === 'medium' && (durationSec <= 120 || durationSec > 600)) continue;
-            if (options.duration === 'long' && durationSec <= 600) continue;
-
-            let thumb = raw.thumbnail;
-            if (!thumb && Array.isArray(raw.thumbnails) && raw.thumbnails.length > 0) {
-              thumb = raw.thumbnails[raw.thumbnails.length - 1].url;
-            }
-            if (!thumb) {
-              thumb = `https://i.ytimg.com/vi/${raw.id}/hqdefault.jpg`;
-            }
-
-            const videoUrl = raw.url && raw.url.startsWith('http')
-              ? raw.url
-              : `https://www.youtube.com/watch?v=${raw.id}`;
-
-            const tags = extractTags(raw.title || '', raw.description, raw.tags);
-
-            results.push({
-              id: raw.id,
-              title: raw.title || 'Video sin título',
-              description: raw.description ? raw.description.slice(0, 180) : undefined,
-              thumbnail: thumb,
-              duration: durationSec,
-              durationFormatted: formatDuration(durationSec),
-              uploader: raw.uploader || raw.channel || 'Creador de contenido',
-              platform: 'youtube',
-              views: raw.view_count,
-              viewsFormatted: formatViews(raw.view_count),
-              uploadedAt: raw.upload_date,
-              url: videoUrl,
-              tags: tags.length > 0 ? tags : [`#${searchQuery.split(' ')[0]}`],
-            });
-          } catch {
-            // Ignore single malformed line
-          }
-        }
-
-        // Apply sorting
-        if (options.sortBy === 'views') {
-          results.sort((a, b) => (b.views || 0) - (a.views || 0));
-        } else if (options.sortBy === 'duration_asc') {
-          results.sort((a, b) => a.duration - b.duration);
-        } else if (options.sortBy === 'duration_desc') {
-          results.sort((a, b) => b.duration - a.duration);
-        }
-
-        if (results.length > 0) {
-          searchCache.set(cacheKey, { timestamp: Date.now(), results });
-          resolve(results);
-        } else {
-          // If 0 results on YouTube, check NSFW engine
-          const fallbackNsfw = await searchNsfwVideos(options);
-          resolve(fallbackNsfw);
-        }
-      } catch (err) {
-        console.error('[SearchEngine] Parse error:', err);
-        const fallbackNsfw = await searchNsfwVideos(options);
-        resolve(fallbackNsfw);
-      }
-    });
-
-    child.on('error', async () => {
-      clearTimeout(timeout);
-      const fallbackNsfw = await searchNsfwVideos(options);
-      resolve(fallbackNsfw);
-    });
-  });
+  return [];
 }

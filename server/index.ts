@@ -19,15 +19,14 @@ app.get('/api/health', (_req, res) => {
 // Version check endpoint for update notifications
 app.get('/api/version', (_req, res) => {
   res.json({
-    version: '2.2.0',
-    title: 'Soporte Completo de Búsquedas NSFW / +18 y Multi-Fuente',
+    version: '2.3.0',
+    title: 'Buscador Pro 100% Compatible con Vercel Serverless & Novedades',
     releaseDate: '2026-10-10',
     notes: [
-      'Motor dedicado para búsquedas y etiquetas +18 / NSFW sin censura',
-      'Interruptor directo de SafeSearch / Modo +18 en la barra de filtros',
-      'Nueva categoría rápida "🔞 Adultos & +18" con tendencias y tags',
-      'Reproductor modal compatible con streams y embeds directos',
-      'Detección inteligente y enrutamiento automático de términos para adultos',
+      'Motor de búsqueda nativo en TypeScript compatible al 100% con Vercel Serverless',
+      'Resultados instantáneos para cualquier búsqueda y etiqueta (#tags)',
+      'Soporte completo de contenido +18 / NSFW con SafeSearch toggle',
+      'Reproductor modal integrado con visor HD y descarga rápida',
     ],
   });
 });
