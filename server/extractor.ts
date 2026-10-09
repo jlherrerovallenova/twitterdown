@@ -668,3 +668,25 @@ export async function extractVideo(inputUrl: string): Promise<TweetVideoData> {
   // If live tweet extraction couldn't find a video
   throw new Error('No se pudo encontrar ningún video en este tweet. Verifica que el tweet contenga un video o GIF público.');
 }
+
+export async function extractUniversalVideo(inputUrl: string): Promise<TweetVideoData> {
+  const trimmed = inputUrl.trim();
+  const tweetId = extractTweetId(trimmed);
+  if (tweetId) {
+    return extractVideo(trimmed);
+  }
+
+  // Check demo IDs first
+  if (SAMPLE_TWEETS[trimmed]) {
+    return SAMPLE_TWEETS[trimmed];
+  }
+
+  // Universal extraction via yt-dlp
+  const ytResult = await extractWithYtDlp(trimmed);
+  if (ytResult && ytResult.formats.length > 0) {
+    return ytResult;
+  }
+
+  throw new Error('No se pudo obtener información del video. Comprueba que el enlace sea válido y público.');
+}
+

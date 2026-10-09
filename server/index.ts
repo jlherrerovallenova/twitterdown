@@ -1,8 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import fs from 'node:fs';
-import { extractVideo, SAMPLE_TWEETS } from './extractor';
+import { extractUniversalVideo, SAMPLE_TWEETS } from './extractor';
 import { processVideoTrim } from './trimmer';
+import { searchVideos, getSearchSuggestions, CATEGORY_PRESETS } from './searchEngine';
 
 const app = express();
 const PORT = process.env.PORT || 3005;
@@ -13,6 +14,68 @@ app.use(express.json());
 // Healthcheck
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
+// Version check endpoint for update notifications
+app.get('/api/version', (_req, res) => {
+  res.json({
+    version: '2.1.0',
+    title: 'Buscador Pro de Videos por Palabras Clave y Etiquetas',
+    releaseDate: '2026-10-10',
+    notes: [
+      'Buscador universal de videos por keywords y #hashtags',
+      'Nube interactiva de tendencias y categorías rápidas',
+      'Filtros por plataforma, duración y ordenación',
+      'Reproductor modal integrado con descarga 1080p FHD y MP3',
+      'Gestor de favoritos y recortador de clips/GIFs',
+    ],
+  });
+});
+
+// Categories & Discovery Presets
+app.get('/api/search/categories', (_req, res) => {
+  res.json({ success: true, categories: CATEGORY_PRESETS });
+});
+
+// Auto-suggestions by query
+app.get('/api/search/suggestions', (req, res) => {
+  const query = (req.query.q as string) || '';
+  const suggestions = getSearchSuggestions(query);
+  res.json({ success: true, suggestions });
+});
+
+// Advanced Video Search by Keywords / Tags
+app.get('/api/search', async (req, res) => {
+  try {
+    const query = (req.query.q as string) || '';
+    if (!query.trim()) {
+      res.status(400).json({ success: false, error: 'Se requiere un término de búsqueda o etiqueta.' });
+      return;
+    }
+
+    const platform = (req.query.platform as string) || 'all';
+    const duration = (req.query.duration as 'all' | 'short' | 'medium' | 'long') || 'all';
+    const sortBy = (req.query.sortBy as 'relevance' | 'views' | 'date' | 'duration_asc' | 'duration_desc') || 'relevance';
+    const limit = parseInt(req.query.limit as string) || 24;
+
+    const results = await searchVideos({
+      query,
+      platform,
+      duration,
+      sortBy,
+      limit,
+    });
+
+    res.json({
+      success: true,
+      query,
+      total: results.length,
+      results,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Error al realizar la búsqueda de videos.';
+    res.status(500).json({ success: false, error: message });
+  }
 });
 
 // Samples endpoint
@@ -28,19 +91,19 @@ app.get('/api/samples', (_req, res) => {
   res.json({ samples });
 });
 
-// Extract video metadata
+// Extract video metadata (Supports Twitter/X, YouTube, etc.)
 app.post('/api/extract', async (req, res) => {
   try {
     const { url } = req.body;
     if (!url || typeof url !== 'string') {
-      res.status(400).json({ error: 'La URL del tweet es obligatoria.' });
+      res.status(400).json({ error: 'La URL del video es obligatoria.' });
       return;
     }
 
-    const data = await extractVideo(url);
+    const data = await extractUniversalVideo(url);
     res.json({ success: true, data });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Error inesperado al procesar el tweet.';
+    const message = err instanceof Error ? err.message : 'Error inesperado al procesar el enlace de video.';
     res.status(422).json({ error: message });
   }
 });
@@ -49,7 +112,7 @@ app.post('/api/extract', async (req, res) => {
 app.get('/api/download', async (req, res) => {
   try {
     const fileUrl = req.query.url as string;
-    const requestedName = (req.query.filename as string) || 'twitter_video.mp4';
+    const requestedName = (req.query.filename as string) || 'video.mp4';
 
     if (!fileUrl) {
       res.status(400).send('Falta el parámetro url');
@@ -110,7 +173,7 @@ app.get('/api/trim', async (req, res) => {
     const start = parseFloat(req.query.start as string) || 0;
     const end = parseFloat(req.query.end as string) || 0;
     const format = (req.query.format === 'gif' ? 'gif' : 'mp4') as 'mp4' | 'gif';
-    const requestedName = (req.query.filename as string) || `twitter_clip.${format}`;
+    const requestedName = (req.query.filename as string) || `video_clip.${format}`;
 
     if (!videoUrl || end <= start) {
       res.status(400).send('Parámetros de recorte inválidos.');
@@ -148,5 +211,5 @@ app.get('/api/trim', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`[Backend] Twitter Downloader API corriendo en http://localhost:${PORT}`);
+  console.log(`[Backend] Video Downloader & Search API corriendo en http://localhost:${PORT}`);
 });

@@ -1,16 +1,64 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
+import { SearchHero } from './components/SearchHero';
+import { SearchFilterBar } from './components/SearchFilterBar';
+import { SearchResultCard } from './components/SearchResultCard';
+import { VideoModalPlayer } from './components/VideoModalPlayer';
+import { TrimmerModal } from './components/TrimmerModal';
+import { FavoritesView } from './components/FavoritesView';
+import { NewVersionPopup } from './components/NewVersionPopup';
 import { SmartClipboardBanner } from './components/SmartClipboardBanner';
 import { UrlInputForm } from './components/UrlInputForm';
 import { VideoCard } from './components/VideoCard';
 import { DownloadHistory } from './components/DownloadHistory';
 import { Footer } from './components/Footer';
-import { TweetVideoData, VideoFormat, HistoryItem } from './types';
+import {
+  TweetVideoData,
+  VideoFormat,
+  HistoryItem,
+  SearchResultItem,
+  SearchFilters,
+  FavoriteVideo,
+} from './types';
+import { Search, AlertCircle, RefreshCw } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const [videoData, setVideoData] = useState<TweetVideoData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Navigation tab state
+  const [activeTab, setActiveTab] = useState<'search' | 'downloader' | 'favorites'>('search');
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('trending viral videos');
+  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [filters, setFilters] = useState<SearchFilters>({
+    query: 'trending viral videos',
+    platform: 'all',
+    duration: 'all',
+    sortBy: 'relevance',
+  });
+
+  // Modal Player & Trimmer state
+  const [activePlayingVideo, setActivePlayingVideo] = useState<SearchResultItem | null>(null);
+  const [activeTrimmerData, setActiveTrimmerData] = useState<TweetVideoData | null>(null);
+
+  // URL Downloader tab state
+  const [urlVideoData, setUrlVideoData] = useState<TweetVideoData | null>(null);
+  const [isUrlLoading, setIsUrlLoading] = useState(false);
+  const [urlErrorMessage, setUrlErrorMessage] = useState<string | null>(null);
+
+  // Favorites state persisted in localStorage
+  const [favorites, setFavorites] = useState<FavoriteVideo[]>(() => {
+    try {
+      const saved = localStorage.getItem('omni_video_favorites');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Download history state
   const [history, setHistory] = useState<HistoryItem[]>(() => {
     try {
       const saved = localStorage.getItem('twitter_dl_history');
@@ -20,25 +68,145 @@ export const App: React.FC = () => {
     }
   });
 
-  // Sync history to localStorage in an effect to keep state updaters pure
+  // Save favorites to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('omni_video_favorites', JSON.stringify(favorites));
+    } catch {
+      // Ignore
+    }
+  }, [favorites]);
+
+  // Save history to localStorage
   useEffect(() => {
     try {
       localStorage.setItem('twitter_dl_history', JSON.stringify(history));
     } catch {
-      // Storage quota or disabled in private browsing
+      // Ignore
     }
   }, [history]);
 
-  const handleSearch = useCallback(async (url: string) => {
-    setIsLoading(true);
-    setErrorMessage(null);
+  // Execute video search
+  const performSearch = useCallback(async (query: string, currentFilters = filters) => {
+    if (!query.trim()) return;
+
+    setIsSearching(true);
+    setSearchError(null);
+    setSearchQuery(query);
+
+    try {
+      const params = new URLSearchParams({
+        q: query.trim(),
+        platform: currentFilters.platform,
+        duration: currentFilters.duration,
+        sortBy: currentFilters.sortBy,
+        limit: '28',
+      });
+
+      const res = await fetch(`/api/search?${params.toString()}`);
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Error al buscar videos.');
+      }
+
+      setSearchResults(data.results || []);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'No se pudo conectar con el servidor de búsqueda.';
+      setSearchError(msg);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [filters]);
+
+  // Initial search on mount
+  useEffect(() => {
+    performSearch('trending viral videos');
+  }, []);
+
+  const handleFilterChange = (updated: Partial<SearchFilters>) => {
+    const nextFilters = { ...filters, ...updated };
+    setFilters(nextFilters);
+    performSearch(searchQuery, nextFilters);
+  };
+
+  const handleResetFilters = () => {
+    const defaultFilters: SearchFilters = {
+      query: searchQuery,
+      platform: 'all',
+      duration: 'all',
+      sortBy: 'relevance',
+    };
+    setFilters(defaultFilters);
+    performSearch(searchQuery, defaultFilters);
+  };
+
+  // Toggle favorite
+  const handleToggleFavorite = useCallback((item: SearchResultItem) => {
+    setFavorites((prev) => {
+      const exists = prev.some((f) => f.id === item.id);
+      if (exists) {
+        return prev.filter((f) => f.id !== item.id);
+      } else {
+        const newFav: FavoriteVideo = {
+          id: item.id,
+          title: item.title,
+          thumbnail: item.thumbnail,
+          durationFormatted: item.durationFormatted,
+          duration: item.duration,
+          uploader: item.uploader,
+          url: item.url,
+          platform: item.platform,
+          savedAt: Date.now(),
+          tags: item.tags,
+        };
+        return [newFav, ...prev];
+      }
+    });
+  }, []);
+
+  const handleRemoveFavorite = useCallback((id: string) => {
+    setFavorites((prev) => prev.filter((f) => f.id !== id));
+  }, []);
+
+  const handleClearFavorites = useCallback(() => {
+    setFavorites([]);
+  }, []);
+
+  // Quick download helper for Search results
+  const handleQuickDownload = useCallback(async (item: SearchResultItem) => {
+    setActivePlayingVideo(item);
+  }, []);
+
+  // Open trimmer directly for a search result
+  const handleOpenTrimmerForResult = useCallback(async (item: SearchResultItem) => {
+    try {
+      const res = await fetch('/api/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: item.url }),
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        setActiveTrimmerData(json.data);
+      } else {
+        setActivePlayingVideo(item);
+      }
+    } catch {
+      setActivePlayingVideo(item);
+    }
+  }, []);
+
+  // URL extraction handler (Tab 2)
+  const handleUrlExtract = useCallback(async (url: string) => {
+    setIsUrlLoading(true);
+    setUrlErrorMessage(null);
 
     try {
       const res = await fetch('/api/extract', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
       });
 
@@ -55,96 +223,222 @@ export const App: React.FC = () => {
       }
 
       const json = await res.json();
-
       if (!json.success) {
-        throw new Error(json.error || 'No se pudo obtener el video del tweet especificado.');
+        throw new Error(json.error || 'No se pudo obtener el video.');
       }
 
-      setVideoData(json.data);
+      setUrlVideoData(json.data);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al procesar el enlace de Twitter / X.';
-      setErrorMessage(msg);
-      setVideoData(null);
+      const msg = err instanceof Error ? err.message : 'Error al procesar el enlace de video.';
+      setUrlErrorMessage(msg);
+      setUrlVideoData(null);
     } finally {
-      setIsLoading(false);
+      setIsUrlLoading(false);
     }
   }, []);
 
-  const handleClearError = useCallback(() => {
-    setErrorMessage(null);
-  }, []);
-
   const handleDownloadCompleted = useCallback((format: VideoFormat) => {
-    if (!videoData) return;
+    if (!urlVideoData) return;
 
     const newItem: HistoryItem = {
-      id: `${videoData.id}-${Date.now()}`,
-      tweetId: videoData.id,
-      title: videoData.text.slice(0, 70) || videoData.author.name,
-      authorName: videoData.author.name,
-      screenName: videoData.author.screenName,
-      thumbnail: videoData.thumbnail,
+      id: `${urlVideoData.id}-${Date.now()}`,
+      tweetId: urlVideoData.id,
+      title: urlVideoData.text.slice(0, 70) || urlVideoData.author.name,
+      authorName: urlVideoData.author.name,
+      screenName: urlVideoData.author.screenName,
+      thumbnail: urlVideoData.thumbnail,
       timestamp: Date.now(),
       quality: format.quality,
       downloadUrl: format.url,
     };
 
     setHistory((prev) => [newItem, ...prev.slice(0, 19)]);
-  }, [videoData]);
-
-  const handleClearHistory = useCallback(() => {
-    setHistory([]);
-  }, []);
-
-  const handleDeleteHistoryItem = useCallback((id: string) => {
-    setHistory((prev) => prev.filter((item) => item.id !== id));
-  }, []);
+  }, [urlVideoData]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
-      <Header />
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800 antialiased font-sans">
+      <Header
+        activeTab={activeTab}
+        onChangeTab={setActiveTab}
+        favoritesCount={favorites.length}
+      />
 
       <main className="flex-1 pb-16">
-        {/* Hero Section */}
-        <div className="pt-8 sm:pt-12 pb-8 px-4 text-center max-w-4xl mx-auto">
-          <SmartClipboardBanner onSelectUrl={handleSearch} currentUrl={videoData?.url} />
-
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight sm:leading-none">
-            Descargar Videos de <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-sky-500 via-sky-600 to-blue-600 bg-clip-text text-transparent">
-              Twitter y X
-            </span>
-          </h1>
-
-          <div className="mt-8">
-            <UrlInputForm
-              onSearch={handleSearch}
-              isLoading={isLoading}
-              errorMessage={errorMessage}
-              onClearError={handleClearError}
+        {/* ================= TAB 1: BUSCADOR PRO DE VIDEOS ================= */}
+        {activeTab === 'search' && (
+          <div className="w-full">
+            {/* Search Hero Area */}
+            <SearchHero
+              onSearch={(q) => performSearch(q)}
+              currentQuery={searchQuery}
+              isLoading={isSearching}
             />
-          </div>
-        </div>
 
-        {/* Video Card Result */}
-        {videoData && (
-          <div className="px-4">
-            <VideoCard
-              data={videoData}
-              onDownloadCompleted={handleDownloadCompleted}
-            />
+            {/* Results & Filters Container */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+              {/* Filter Bar */}
+              <SearchFilterBar
+                filters={filters}
+                onChangeFilters={handleFilterChange}
+                totalResults={searchResults.length}
+                viewMode={viewMode}
+                onChangeViewMode={setViewMode}
+                onResetFilters={handleResetFilters}
+              />
+
+              {/* Error Alert */}
+              {searchError && (
+                <div className="p-4 mb-6 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <AlertCircle className="w-5 h-5 shrink-0" />
+                    <span>{searchError}</span>
+                  </div>
+                  <button
+                    onClick={() => performSearch(searchQuery)}
+                    className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Reintentar</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Loading Skeletons */}
+              {isSearching ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-white rounded-2xl border border-slate-200 overflow-hidden p-4 space-y-3 animate-pulse"
+                    >
+                      <div className="aspect-video bg-slate-200 rounded-xl" />
+                      <div className="h-4 bg-slate-200 rounded-md w-3/4" />
+                      <div className="h-3 bg-slate-200 rounded-md w-1/2" />
+                      <div className="flex gap-2 pt-2">
+                        <div className="h-7 bg-slate-200 rounded-lg flex-1" />
+                        <div className="h-7 bg-slate-200 rounded-lg w-10" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : searchResults.length === 0 ? (
+                /* Empty Results State */
+                <div className="text-center py-16 px-4 bg-white rounded-3xl border border-slate-200 shadow-xs max-w-xl mx-auto">
+                  <div className="w-16 h-16 rounded-2xl bg-sky-50 text-sky-500 flex items-center justify-center mx-auto mb-4">
+                    <Search className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-800">No se encontraron videos</h3>
+                  <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto mt-1 mb-6">
+                    Intenta buscar con otras palabras clave, etiquetas generales como #AI, #Gaming, o quita los filtros activos.
+                  </p>
+                  <button
+                    onClick={() => performSearch('trending viral')}
+                    className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-md transition"
+                  >
+                    Ver Videos Virales de Tendencia
+                  </button>
+                </div>
+              ) : (
+                /* Video Results List / Grid */
+                <div
+                  className={
+                    viewMode === 'grid'
+                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6'
+                      : 'flex flex-col gap-4'
+                  }
+                >
+                  {searchResults.map((item) => (
+                    <SearchResultCard
+                      key={item.id}
+                      item={item}
+                      viewMode={viewMode}
+                      onPlay={setActivePlayingVideo}
+                      onDownload={handleQuickDownload}
+                      onTrim={handleOpenTrimmerForResult}
+                      onToggleFavorite={handleToggleFavorite}
+                      isFavorite={favorites.some((f) => f.id === item.id)}
+                      onSelectTag={(tag) => performSearch(tag)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Download History */}
-        <div className="px-4">
-          <DownloadHistory
-            items={history}
-            onClearHistory={handleClearHistory}
-            onDeleteItem={handleDeleteHistoryItem}
+        {/* ================= TAB 2: DESCARGADOR POR URL ================= */}
+        {activeTab === 'downloader' && (
+          <div className="pt-8 sm:pt-12 pb-8 px-4 text-center max-w-4xl mx-auto">
+            <SmartClipboardBanner onSelectUrl={handleUrlExtract} currentUrl={urlVideoData?.url} />
+
+            <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+              Descargar por Enlace Directo <br className="hidden sm:inline" />
+              <span className="bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Twitter, X & Plataformas
+              </span>
+            </h1>
+
+            <div className="mt-8">
+              <UrlInputForm
+                onSearch={handleUrlExtract}
+                isLoading={isUrlLoading}
+                errorMessage={urlErrorMessage}
+                onClearError={() => setUrlErrorMessage(null)}
+              />
+            </div>
+
+            {/* Video Card Result */}
+            {urlVideoData && (
+              <div className="mt-8 text-left">
+                <VideoCard
+                  data={urlVideoData}
+                  onDownloadCompleted={handleDownloadCompleted}
+                />
+              </div>
+            )}
+
+            {/* Download History */}
+            <div className="mt-12 text-left">
+              <DownloadHistory
+                items={history}
+                onClearHistory={() => setHistory([])}
+                onDeleteItem={(id) => setHistory((prev) => prev.filter((item) => item.id !== id))}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ================= TAB 3: FAVORITOS GUARDADOS ================= */}
+        {activeTab === 'favorites' && (
+          <FavoritesView
+            favorites={favorites}
+            onRemoveFavorite={handleRemoveFavorite}
+            onClearAll={handleClearFavorites}
+            onPlay={setActivePlayingVideo}
+            onDownload={handleQuickDownload}
           />
-        </div>
+        )}
       </main>
+
+      {/* ================= MODAL VIDEO PLAYER ================= */}
+      {activePlayingVideo && (
+        <VideoModalPlayer
+          item={activePlayingVideo}
+          onClose={() => setActivePlayingVideo(null)}
+          onOpenTrimmer={(videoData) => setActiveTrimmerData(videoData)}
+        />
+      )}
+
+      {/* ================= MODAL VIDEO TRIMMER ================= */}
+      {activeTrimmerData && (
+        <TrimmerModal
+          videoData={activeTrimmerData}
+          onClose={() => setActiveTrimmerData(null)}
+        />
+      )}
+
+      {/* ================= NEW VERSION NOTIFICATION POPUP ================= */}
+      <NewVersionPopup />
 
       <Footer />
     </div>

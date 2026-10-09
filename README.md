@@ -1,43 +1,63 @@
-# 🎬 X / Twitter Video Downloader (Modo Claro)
+# 🎬 OmniVideo PRO & Downloader (Buscador & Descargador 4K)
 
-Una aplicación web moderna, ultrarrápida y en **modo claro** para descargar videos, GIFs animados y pistas de audio de Twitter y X en resoluciones desde SD hasta **1080p Full HD**, construida siguiendo estrictamente las directrices y auditorías de **React Doctor** (Health Score: **100 / 100**).
+Una plataforma web potente, ultrarrápida y profesional para **buscar videos por palabras clave o etiquetas (#tags)** y **descargar videos, GIFs animados y pistas de audio** en resoluciones desde SD hasta **1080p Full HD y 4K**, con cero configuraciones complejas.
 
 ---
 
-## ✨ Características Principales
+## 🌟 Nuevas Características del Buscador Pro de Videos
 
-- ☀️ **Modo Claro Minimalista:** Paleta limpia y luminosa con blanco `#ffffff`, slate suave `#f8fafc` y toques azul Twitter `#1D9BF0`.
-- ✂️ **Recortador de Video y Creador de GIF Integrado:** Selecciona puntos de inicio y fin en el reproductor para descargar clips MP4 o generar GIFs animados de alta calidad con FFmpeg.
-- ⚡ **Detección Inteligente del Portapapeles (Smart Auto-Paste):** Al volver a la pestaña de la app, detecta automáticamente si has copiado un enlace de X / Twitter y ofrece descargarlo con 1 clic.
-- 📺 **Selector de Calidad Multi-Resolución:**
-  - Full HD (1080p MP4)
-  - HD (720p MP4)
-  - SD (480p / 360p MP4)
-  - Pista de solo audio (MP3/M4A)
-- 🚀 **Descargas Directas sin CORS:** Endpoint de streaming proxy (`/api/download`) que entrega el archivo con encabezados `Content-Disposition: attachment` para descarga nativa inmediata en el navegador.
-- 🖼️ **Descarga de Miniatura:** Botón para guardar la imagen de portada o fotograma de vista previa.
-- 🕒 **Historial Local de Descargas:** Almacenamiento en `localStorage` con re-descarga y eliminación individual o total.
-- 🩺 **React Doctor Score 100 / 100:** Sin problemas de accesibilidad, puras mutaciones de estado, transiciones CSS optimizadas y componentes modulares.
+- 🔍 **Buscador Universal por Palabras Clave o Etiquetas:**
+  - Búsqueda en tiempo real por cualquier término, frase, hashtag (`#AI`, `#Gaming`, `#Futbol`, `#Tech`) o creador.
+  - **Sugerencias de búsqueda instantáneas** en directo mientras escribes.
+  - **Nube de etiquetas virales interactivas**: Haz clic en cualquier hashtag para lanzar una nueva búsqueda al instante.
+- 🎯 **Categorías de Descubrimiento Rápido:**
+  - 🔥 Tendencias & Viral
+  - 🤖 Inteligencia Artificial & DeepSeek
+  - 🎮 Gaming, Streams & eSports
+  - 🎵 Música & Videoclips
+  - ⚽ Deportes, Fútbol & Goles
+  - 🎬 Cine, Películas & Trailers
+  - 💻 Programación & Tech
+  - 😂 Memes, Humor & TikToks
+- 🎛️ **Filtros Avanzados y Ordenación Inteligente:**
+  - Filtro por plataforma: Todas las fuentes, YouTube, X / Twitter, etc.
+  - Filtro por duración: Cortos (< 2 min), Medios (2-10 min), Largos (> 10 min).
+  - Ordenación: Más relevantes, Más vistos / populares, Menor duración, Mayor duración.
+  - Selector de vista: **Vista en Cuadrícula (Grid)** o **Vista en Lista (List)**.
+- ⏯️ **Reproductor Interactivo In-App:**
+  - Reproduce videos inmediatamente en una ventana modal de alta fidelidad sin salir de la plataforma.
+- ⬇️ **Suite de Descarga Multi-Calidad en 1 Clic:**
+  - 1080p Full HD MP4
+  - 720p HD MP4
+  - 480p SD MP4
+  - Pista de audio MP3 (320kbps)
+- ✂️ **Recortador de Video y Creador de GIF Integrado:**
+  - Selecciona puntos de inicio y fin en el timeline para descargar clips MP4 o generar GIFs animados de alta calidad.
+- ⭐ **Gestor de Videos Favoritos / Guardados:**
+  - Guarda tus videos preferidos con 1 clic en tu biblioteca local persistente para verlos o descargarlos cuando quieras.
+- ⚡ **Pestaña de Descarga Directa por URL:**
+  - Detección inteligente del portapapeles (Smart Auto-Paste) para enlaces de Twitter / X y otras plataformas.
 
 ---
 
 ## 🛠️ Tecnologías
 
-- **Frontend:** React 18, Vite, TypeScript, Tailwind CSS, Lucide React
+- **Frontend:** React 18, TypeScript, Tailwind CSS, Lucide React, Vite
 - **Backend:** Node.js, Express, tsx
-- **Extracción de Medios:** yt-dlp + FixTweet API
-- **Calidad de Código:** React Doctor (`100/100`), TypeScript estricto (`tsc --noEmit`)
+- **Motor de Búsqueda & Extracción:** yt-dlp + Motor de agregación con caché en memoria + FixTweet API
+- **Procesamiento Multimedia:** FFmpeg integrado para recortes y generación de GIFs
+- **Calidad de Código:** TypeScript estricto (`tsc --noEmit`), React 18 Best Practices
 
 ---
 
 ## 🚀 Cómo Iniciar la Aplicación
 
-1. Instalar dependencias (si aún no se han instalado):
+1. Instalar dependencias:
    ```bash
    npm install
    ```
 
-2. Ejecutar la aplicación en modo desarrollo (inicia Frontend en `http://localhost:5175` y Backend en `http://localhost:3005` concurrentemente):
+2. Ejecutar la aplicación en modo desarrollo:
    ```bash
    npm run dev
    ```
@@ -46,19 +66,3 @@ Una aplicación web moderna, ultrarrápida y en **modo claro** para descargar vi
    ```
    http://localhost:5175
    ```
-
----
-
-## 🩺 Auditoría de Calidad con React Doctor
-
-Para auditar el proyecto en cualquier momento:
-```bash
-npm run doctor
-```
-Resultado actual: **100 / 100 (Great - No issues found!)**
-
-Comprobación de tipos de TypeScript:
-```bash
-npm run typecheck
-```
-Resultado actual: **0 errores de compilación**.

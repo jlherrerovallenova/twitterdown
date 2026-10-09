@@ -40,3 +40,48 @@ export interface HistoryItem {
   quality: string;
   downloadUrl: string;
 }
+
+export interface SearchResultItem {
+  id: string;
+  title: string;
+  description?: string;
+  thumbnail: string;
+  duration: number; // in seconds
+  durationFormatted: string;
+  uploader: string;
+  uploaderAvatar?: string;
+  platform: 'youtube' | 'twitter' | 'tiktok' | 'reddit' | 'other';
+  views?: number;
+  viewsFormatted?: string;
+  uploadedAt?: string;
+  url: string;
+  tags: string[];
+}
+
+export interface SearchFilters {
+  query: string;
+  platform: string;
+  duration: 'all' | 'short' | 'medium' | 'long';
+  sortBy: 'relevance' | 'views' | 'date' | 'duration_asc' | 'duration_desc';
+}
+
+export interface CategoryPreset {
+  key: string;
+  label: string;
+  icon: string;
+  query: string;
+  tags: string[];
+}
+
+export interface FavoriteVideo {
+  id: string;
+  title: string;
+  thumbnail: string;
+  durationFormatted: string;
+  duration: number;
+  uploader: string;
+  url: string;
+  platform: string;
+  savedAt: number;
+  tags?: string[];
+}
