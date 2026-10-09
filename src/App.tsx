@@ -6,6 +6,7 @@ import { SearchResultCard } from './components/SearchResultCard';
 import { VideoModalPlayer } from './components/VideoModalPlayer';
 import { TrimmerModal } from './components/TrimmerModal';
 import { FavoritesView } from './components/FavoritesView';
+import { Pagination } from './components/Pagination';
 import { NewVersionPopup } from './components/NewVersionPopup';
 import { SmartClipboardBanner } from './components/SmartClipboardBanner';
 import { UrlInputForm } from './components/UrlInputForm';
@@ -30,6 +31,9 @@ export const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('trending viral videos');
   const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filters, setFilters] = useState<SearchFilters>({
@@ -87,39 +91,56 @@ export const App: React.FC = () => {
   }, [history]);
 
   // Execute video search
-  const performSearch = useCallback(async (query: string, currentFilters = filters) => {
-    if (!query.trim()) return;
+  const performSearch = useCallback(
+    async (query: string, currentFilters = filters, page = 1, append = false) => {
+      if (!query.trim()) return;
 
-    setIsSearching(true);
-    setSearchError(null);
-    setSearchQuery(query);
-
-    try {
-      const params = new URLSearchParams({
-        q: query.trim(),
-        platform: currentFilters.platform,
-        duration: currentFilters.duration,
-        sortBy: currentFilters.sortBy,
-        nsfw: currentFilters.nsfw || currentFilters.platform === 'nsfw' ? 'true' : 'false',
-        limit: '28',
-      });
-
-      const res = await fetch(`/api/search?${params.toString()}`);
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Error al buscar videos.');
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setIsSearching(true);
+        setSearchError(null);
       }
+      setSearchQuery(query);
+      setCurrentPage(page);
 
-      setSearchResults(data.results || []);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'No se pudo conectar con el servidor de búsqueda.';
-      setSearchError(msg);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [filters]);
+      try {
+        const params = new URLSearchParams({
+          q: query.trim(),
+          platform: currentFilters.platform,
+          duration: currentFilters.duration,
+          sortBy: currentFilters.sortBy,
+          nsfw: currentFilters.nsfw || currentFilters.platform === 'nsfw' ? 'true' : 'false',
+          page: page.toString(),
+          limit: '24',
+        });
+
+        const res = await fetch(`/api/search?${params.toString()}`);
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Error al buscar videos.');
+        }
+
+        const newResults = data.results || [];
+        if (append) {
+          setSearchResults((prev) => [...prev, ...newResults]);
+        } else {
+          setSearchResults(newResults);
+        }
+
+        setHasMore(data.hasMore !== undefined ? data.hasMore : newResults.length >= 8);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'No se pudo conectar con el servidor de búsqueda.';
+        setSearchError(msg);
+        if (!append) setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [filters]
+  );
 
   // Initial search on mount
   useEffect(() => {
@@ -129,7 +150,7 @@ export const App: React.FC = () => {
   const handleFilterChange = (updated: Partial<SearchFilters>) => {
     const nextFilters = { ...filters, ...updated };
     setFilters(nextFilters);
-    performSearch(searchQuery, nextFilters);
+    performSearch(searchQuery, nextFilters, 1, false);
   };
 
   const handleResetFilters = () => {
@@ -141,7 +162,16 @@ export const App: React.FC = () => {
       nsfw: false,
     };
     setFilters(defaultFilters);
-    performSearch(searchQuery, defaultFilters);
+    performSearch(searchQuery, defaultFilters, 1, false);
+  };
+
+  const handleLoadMore = () => {
+    performSearch(searchQuery, filters, currentPage + 1, true);
+  };
+
+  const handleSelectPage = (page: number) => {
+    performSearch(searchQuery, filters, page, false);
+    window.scrollTo({ top: 350, behavior: 'smooth' });
   };
 
   // Toggle favorite
@@ -351,27 +381,38 @@ export const App: React.FC = () => {
                 </div>
               ) : (
                 /* Video Results List / Grid */
-                <div
-                  className={
-                    viewMode === 'grid'
-                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6'
-                      : 'flex flex-col gap-4'
-                  }
-                >
-                  {searchResults.map((item) => (
-                    <SearchResultCard
-                      key={item.id}
-                      item={item}
-                      viewMode={viewMode}
-                      onPlay={setActivePlayingVideo}
-                      onDownload={handleQuickDownload}
-                      onTrim={handleOpenTrimmerForResult}
-                      onToggleFavorite={handleToggleFavorite}
-                      isFavorite={favorites.some((f) => f.id === item.id)}
-                      onSelectTag={(tag) => performSearch(tag)}
-                    />
-                  ))}
-                </div>
+                <>
+                  <div
+                    className={
+                      viewMode === 'grid'
+                        ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6'
+                        : 'flex flex-col gap-4'
+                    }
+                  >
+                    {searchResults.map((item) => (
+                      <SearchResultCard
+                        key={item.id}
+                        item={item}
+                        viewMode={viewMode}
+                        onPlay={setActivePlayingVideo}
+                        onDownload={handleQuickDownload}
+                        onTrim={handleOpenTrimmerForResult}
+                        onToggleFavorite={handleToggleFavorite}
+                        isFavorite={favorites.some((f) => f.id === item.id)}
+                        onSelectTag={(tag) => performSearch(tag)}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Pagination & Load More Controls */}
+                  <Pagination
+                    currentPage={currentPage}
+                    hasMore={hasMore}
+                    isLoadingMore={isLoadingMore}
+                    onLoadMore={handleLoadMore}
+                    onSelectPage={handleSelectPage}
+                  />
+                </>
               )}
             </div>
           </div>

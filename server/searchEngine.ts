@@ -23,13 +23,22 @@ export interface SearchOptions {
   duration?: 'all' | 'short' | 'medium' | 'long';
   sortBy?: 'relevance' | 'views' | 'date' | 'duration_asc' | 'duration_desc';
   nsfw?: boolean;
+  page?: number;
   limit?: number;
+}
+
+export interface SearchResponse {
+  results: SearchResultItem[];
+  page: number;
+  hasMore: boolean;
+  total: number;
 }
 
 // In-memory cache for ultra-fast response
 interface CacheEntry {
   timestamp: number;
   results: SearchResultItem[];
+  hasMore: boolean;
 }
 
 const searchCache = new Map<string, CacheEntry>();
@@ -104,7 +113,6 @@ function extractTags(title: string, description?: string, explicitTags?: string[
     }
   }
 
-  // Common keyword tags
   const keywordMap: Record<string, string> = {
     python: '#Python',
     ia: '#IA',
@@ -227,9 +235,10 @@ export function getSearchSuggestions(query: string, isNsfw = false): string[] {
   return Array.from(new Set(matches)).slice(0, 8);
 }
 
-// 1. Pure TypeScript / Node.js YouTube Search (100% Serverless compatible with Vercel)
-async function searchPureYouTube(options: SearchOptions): Promise<SearchResultItem[]> {
+// 1. Pure TypeScript / Node.js YouTube Search with Pagination
+async function searchPureYouTube(options: SearchOptions): Promise<{ results: SearchResultItem[]; hasMore: boolean }> {
   const cleanQuery = options.query.replace(/#/g, '').trim();
+  const page = options.page || 1;
   const limit = Math.min(options.limit || 24, 35);
 
   try {
@@ -241,18 +250,81 @@ async function searchPureYouTube(options: SearchOptions): Promise<SearchResultIt
       },
     });
 
-    if (!res.ok) return [];
+    if (!res.ok) return { results: [], hasMore: false };
 
     const html = await res.text();
     const match = html.match(/var ytInitialData = ({.*?});<\/script>/) || html.match(/ytInitialData\s*=\s*({.+?});/);
-    if (!match) return [];
+    if (!match) return { results: [], hasMore: false };
 
     const data = JSON.parse(match[1]);
-    const contents = data.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents?.[0]?.itemSectionRenderer?.contents || [];
+    const sectionList = data.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents || [];
+
+    let rawVideoItems: any[] = [];
+    let continuationToken = '';
+
+    for (const s of sectionList) {
+      if (s.itemSectionRenderer?.contents) {
+        rawVideoItems.push(...s.itemSectionRenderer.contents);
+      }
+      if (s.continuationItemRenderer) {
+        continuationToken = s.continuationItemRenderer.continuationEndpoint?.continuationCommand?.token || '';
+      }
+    }
+
+    // If page > 1 and we have a continuation token, fetch the next pages
+    if (page > 1 && continuationToken) {
+      let currentPage = 1;
+      let currentToken = continuationToken;
+
+      while (currentPage < page && currentToken) {
+        try {
+          const contRes = await fetch('https://www.youtube.com/youtubei/v1/search?prettyPrint=false', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            },
+            body: JSON.stringify({
+              context: {
+                client: {
+                  clientName: 'WEB',
+                  clientVersion: '2.20240301.00.00',
+                  hl: 'es',
+                  gl: 'ES',
+                },
+              },
+              continuation: currentToken,
+            }),
+          });
+
+          if (!contRes.ok) break;
+
+          const contJson = await contRes.json();
+          const contItems = contJson.onResponseReceivedCommands?.[0]?.appendContinuationItemsAction?.continuationItems || [];
+
+          rawVideoItems = [];
+          currentToken = '';
+
+          for (const item of contItems) {
+            if (item.itemSectionRenderer?.contents) {
+              rawVideoItems.push(...item.itemSectionRenderer.contents);
+            }
+            if (item.continuationItemRenderer) {
+              currentToken = item.continuationItemRenderer.continuationEndpoint?.continuationCommand?.token || '';
+            }
+          }
+
+          currentPage++;
+          continuationToken = currentToken;
+        } catch {
+          break;
+        }
+      }
+    }
 
     const results: SearchResultItem[] = [];
 
-    for (const item of contents) {
+    for (const item of rawVideoItems) {
       if (!item.videoRenderer) continue;
       const v = item.videoRenderer;
       if (!v.videoId) continue;
@@ -304,16 +376,20 @@ async function searchPureYouTube(options: SearchOptions): Promise<SearchResultIt
       results.sort((a, b) => b.duration - a.duration);
     }
 
-    return results;
+    return {
+      results,
+      hasMore: results.length >= 8 || !!continuationToken,
+    };
   } catch (err) {
     console.error('[SearchEngine] Pure YouTube Search error:', err);
-    return [];
+    return { results: [], hasMore: false };
   }
 }
 
-// 2. Search NSFW adult videos using public high-speed API (100% Serverless compatible with Vercel)
-async function searchNsfwVideos(options: SearchOptions): Promise<SearchResultItem[]> {
+// 2. Search NSFW adult videos using public high-speed API with Pagination
+async function searchNsfwVideos(options: SearchOptions): Promise<{ results: SearchResultItem[]; hasMore: boolean }> {
   const cleanQuery = options.query.replace(/#/g, '').trim() || 'trending';
+  const page = options.page || 1;
   const limit = Math.min(options.limit || 24, 40);
 
   let order = 'top-weekly';
@@ -321,7 +397,7 @@ async function searchNsfwVideos(options: SearchOptions): Promise<SearchResultIte
   if (options.sortBy === 'date') order = 'latest';
 
   try {
-    const url = `https://www.eporner.com/api/v2/video/search/?query=${encodeURIComponent(cleanQuery)}&per_page=${limit}&thumbsize=big&order=${order}`;
+    const url = `https://www.eporner.com/api/v2/video/search/?query=${encodeURIComponent(cleanQuery)}&per_page=${limit}&page=${page}&thumbsize=big&order=${order}`;
     const res = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)',
@@ -329,10 +405,12 @@ async function searchNsfwVideos(options: SearchOptions): Promise<SearchResultIte
     });
 
     if (!res.ok) {
-      return [];
+      return { results: [], hasMore: false };
     }
 
     const data = await res.json() as {
+      total_count?: number;
+      total_pages?: number;
       videos?: Array<{
         id: string;
         title: string;
@@ -348,7 +426,7 @@ async function searchNsfwVideos(options: SearchOptions): Promise<SearchResultIte
     };
 
     if (!Array.isArray(data.videos) || data.videos.length === 0) {
-      return [];
+      return { results: [], hasMore: false };
     }
 
     const items: SearchResultItem[] = [];
@@ -388,50 +466,75 @@ async function searchNsfwVideos(options: SearchOptions): Promise<SearchResultIte
       items.sort((a, b) => b.duration - a.duration);
     }
 
-    return items;
+    const totalPages = data.total_pages || 10;
+    return {
+      results: items,
+      hasMore: page < totalPages && items.length > 0,
+    };
   } catch (err) {
     console.error('[SearchEngine] NSFW Search API error:', err);
-    return [];
+    return { results: [], hasMore: false };
   }
 }
 
-// Perform fast multi-platform video search (Serverless & Express native)
-export async function searchVideos(options: SearchOptions): Promise<SearchResultItem[]> {
+// Perform fast multi-platform video search with pagination (Serverless & Express native)
+export async function searchVideos(options: SearchOptions): Promise<SearchResponse> {
   const cleanQuery = options.query.trim();
-  if (!cleanQuery) return [];
+  const page = options.page || 1;
+  if (!cleanQuery) return { results: [], page, hasMore: false, total: 0 };
 
   const isNsfw = options.nsfw === true || options.platform === 'nsfw' || isNsfwQuery(cleanQuery);
   const limit = Math.min(options.limit || 24, 40);
-  const cacheKey = `${cleanQuery.toLowerCase()}_${options.platform || 'all'}_${options.duration || 'all'}_${options.sortBy || 'relevance'}_${isNsfw ? 'nsfw' : 'safe'}_${limit}`;
+  const cacheKey = `${cleanQuery.toLowerCase()}_${options.platform || 'all'}_${options.duration || 'all'}_${options.sortBy || 'relevance'}_${isNsfw ? 'nsfw' : 'safe'}_p${page}_${limit}`;
 
   // Check cache
   const cached = searchCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
-    return cached.results;
+    return {
+      results: cached.results,
+      page,
+      hasMore: cached.hasMore,
+      total: cached.results.length,
+    };
   }
 
   // 1. If NSFW search is triggered, query adult video engine
   if (isNsfw) {
-    const nsfwResults = await searchNsfwVideos(options);
-    if (nsfwResults.length > 0) {
-      searchCache.set(cacheKey, { timestamp: Date.now(), results: nsfwResults });
-      return nsfwResults;
+    const nsfwData = await searchNsfwVideos(options);
+    if (nsfwData.results.length > 0) {
+      searchCache.set(cacheKey, { timestamp: Date.now(), results: nsfwData.results, hasMore: nsfwData.hasMore });
+      return {
+        results: nsfwData.results,
+        page,
+        hasMore: nsfwData.hasMore,
+        total: nsfwData.results.length,
+      };
     }
   }
 
-  // 2. Perform zero-dependency Pure YouTube search (Runs in 500ms on Vercel)
-  const ytResults = await searchPureYouTube(options);
-  if (ytResults.length > 0) {
-    searchCache.set(cacheKey, { timestamp: Date.now(), results: ytResults });
-    return ytResults;
+  // 2. Perform zero-dependency Pure YouTube search
+  const ytData = await searchPureYouTube(options);
+  if (ytData.results.length > 0) {
+    searchCache.set(cacheKey, { timestamp: Date.now(), results: ytData.results, hasMore: ytData.hasMore });
+    return {
+      results: ytData.results,
+      page,
+      hasMore: ytData.hasMore,
+      total: ytData.results.length,
+    };
   }
 
-  // 3. If standard search returned empty and query might be NSFW, fallback to adult engine
+  // 3. Fallback to adult engine if 0 results
   const fallbackNsfw = await searchNsfwVideos(options);
-  if (fallbackNsfw.length > 0) {
-    searchCache.set(cacheKey, { timestamp: Date.now(), results: fallbackNsfw });
-    return fallbackNsfw;
+  if (fallbackNsfw.results.length > 0) {
+    searchCache.set(cacheKey, { timestamp: Date.now(), results: fallbackNsfw.results, hasMore: fallbackNsfw.hasMore });
+    return {
+      results: fallbackNsfw.results,
+      page,
+      hasMore: fallbackNsfw.hasMore,
+      total: fallbackNsfw.results.length,
+    };
   }
 
-  return [];
+  return { results: [], page, hasMore: false, total: 0 };
 }

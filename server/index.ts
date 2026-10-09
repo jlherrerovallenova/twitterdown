@@ -19,14 +19,14 @@ app.get('/api/health', (_req, res) => {
 // Version check endpoint for update notifications
 app.get('/api/version', (_req, res) => {
   res.json({
-    version: '2.3.0',
-    title: 'Buscador Pro 100% Compatible con Vercel Serverless & Novedades',
+    version: '2.4.0',
+    title: 'Paginación Infinita y Carga Continua de Videos',
     releaseDate: '2026-10-10',
     notes: [
-      'Motor de búsqueda nativo en TypeScript compatible al 100% con Vercel Serverless',
-      'Resultados instantáneos para cualquier búsqueda y etiqueta (#tags)',
-      'Soporte completo de contenido +18 / NSFW con SafeSearch toggle',
-      'Reproductor modal integrado con visor HD y descarga rápida',
+      'Paginación multi-página: Navega por páginas 1, 2, 3, 4, 5+ de resultados',
+      'Botón "Cargar más videos" para explorar cientos de videos sin límites',
+      'Soporte completo de paginación en YouTube y contenido +18 / NSFW',
+      'Transición suave y preservación de filtros y estado de búsqueda',
     ],
   });
 });
@@ -57,22 +57,26 @@ app.get('/api/search', async (req, res) => {
     const duration = (req.query.duration as 'all' | 'short' | 'medium' | 'long') || 'all';
     const sortBy = (req.query.sortBy as 'relevance' | 'views' | 'date' | 'duration_asc' | 'duration_desc') || 'relevance';
     const nsfw = req.query.nsfw === 'true' || platform === 'nsfw';
+    const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 24;
 
-    const results = await searchVideos({
+    const data = await searchVideos({
       query,
       platform,
       duration,
       sortBy,
       nsfw,
+      page,
       limit,
     });
 
     res.json({
       success: true,
       query,
-      total: results.length,
-      results,
+      page: data.page,
+      hasMore: data.hasMore,
+      total: data.total,
+      results: data.results,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Error al realizar la búsqueda de videos.';
