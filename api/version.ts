@@ -3,14 +3,14 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 export default function handler(_req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.status(200).json({
-    version: '2.5.0',
-    title: 'Corrección de Compatibilidad de Navegadores & Inicio Inmediato',
+    version: '2.6.0',
+    title: 'Arquitectura Serverless 100% Blindada y Alta Disponibilidad',
     releaseDate: '2026-10-10',
     notes: [
-      'Eliminado error de coincidencia de patrones del portapapeles en navegadores',
-      'Inicio 100% garantizado en Vercel sin bloqueos ni errores en el arranque',
-      'Motor con fallback instantáneo de resultados recomendados',
-      'Paginación fluida y carga continua de videos',
+      'Eliminado error 500 del servidor con arquitectura serverless autónoma',
+      'Timeout seguro y contingencia garantizada con HTTP 200 siempre',
+      'Compatibilidad total en Vercel, móviles y ordenadores de escritorio',
+      'Paginación fluida y carga continua de videos sin interrupciones',
     ],
   });
 }
