@@ -305,11 +305,36 @@ export const App: React.FC = () => {
         {/* ================= TAB 1: BUSCADOR PRO DE VIDEOS ================= */}
         {activeTab === 'search' && (
           <div className="w-full">
+            {/* Clipboard Banner for 1-click paste on search page */}
+            <div className="pt-4">
+              <SmartClipboardBanner
+                onSelectUrl={(url) => {
+                  setActiveTab('downloader');
+                  handleUrlExtract(url);
+                }}
+                currentUrl={urlVideoData?.url}
+              />
+            </div>
+
             {/* Search Hero Area */}
             <SearchHero
               onSearch={(q, isNsfw) => {
+                const isTwitterUrl =
+                  /(?:twitter\.com|x\.com)\/(?:[a-zA-Z0-9_]+)\/status/i.test(q) ||
+                  /(?:twitter\.com|x\.com)\/i\/status/i.test(q);
+
+                if (isTwitterUrl) {
+                  setActiveTab('downloader');
+                  handleUrlExtract(q);
+                  return;
+                }
+
                 if (isNsfw !== undefined) {
-                  const nextFilters = { ...filters, nsfw: isNsfw, platform: isNsfw ? 'nsfw' : (filters.platform === 'nsfw' ? 'all' : filters.platform) };
+                  const nextFilters = {
+                    ...filters,
+                    nsfw: isNsfw,
+                    platform: isNsfw ? 'nsfw' : filters.platform === 'nsfw' ? 'all' : filters.platform,
+                  };
                   setFilters(nextFilters);
                   performSearch(q, nextFilters);
                 } else {

@@ -80,9 +80,9 @@ export const SearchResultCard: React.FC<SearchResultCardProps> = ({
           </div>
 
           {/* Platform Badge */}
-          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/70 text-white text-[10px] font-bold uppercase backdrop-blur-xs flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            <span>{item.platform}</span>
+          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/80 text-white text-[10px] font-bold uppercase backdrop-blur-xs flex items-center gap-1.5 shadow-xs">
+            <span className="text-white font-black text-[11px]">𝕏</span>
+            <span>Twitter</span>
           </div>
         </div>
 
@@ -215,9 +215,9 @@ export const SearchResultCard: React.FC<SearchResultCardProps> = ({
 
         {/* Top Badges */}
         <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
-          <span className="px-2 py-0.5 rounded-md bg-black/70 text-white text-[10px] font-bold uppercase backdrop-blur-xs flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            {item.platform}
+          <span className="px-2 py-0.5 rounded-md bg-black/80 text-white text-[10px] font-bold uppercase backdrop-blur-xs flex items-center gap-1.5 shadow-xs">
+            <span className="text-white font-black text-[11px]">𝕏</span>
+            <span>Twitter</span>
           </span>
 
           <span className="px-2 py-0.5 rounded-md bg-emerald-600/90 text-white text-[10px] font-bold tracking-wider backdrop-blur-xs shadow-xs">

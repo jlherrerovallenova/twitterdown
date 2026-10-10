@@ -42,44 +42,25 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
           {/* Platform Filter */}
           <div className="flex items-center bg-slate-100/90 p-1 rounded-xl">
             <button
-              onClick={() => onChangeFilters({ platform: 'all' })}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition ${
-                filters.platform === 'all'
-                  ? 'bg-white text-sky-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Todas
-            </button>
-            <button
-              onClick={() => onChangeFilters({ platform: 'youtube' })}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition ${
-                filters.platform === 'youtube'
-                  ? 'bg-white text-red-600 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              YouTube
-            </button>
-            <button
               onClick={() => onChangeFilters({ platform: 'twitter' })}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition ${
-                filters.platform === 'twitter'
-                  ? 'bg-white text-sky-600 shadow-xs'
+              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition ${
+                filters.platform === 'twitter' || filters.platform === 'all'
+                  ? 'bg-black text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              X / Twitter
+              <span className="font-black text-xs">𝕏</span>
+              <span>Twitter / X</span>
             </button>
             <button
               onClick={() => onChangeFilters({ platform: 'nsfw', nsfw: true })}
               className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition ${
-                filters.platform === 'nsfw'
+                filters.platform === 'nsfw' || filters.nsfw
                   ? 'bg-rose-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-rose-600'
               }`}
             >
-              🔞 +18
+              🔞 +18 en X
             </button>
           </div>
 

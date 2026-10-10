@@ -145,8 +145,16 @@ export const VideoModalPlayer: React.FC<VideoModalPlayerProps> = ({
                 src={directMp4Url}
                 controls
                 autoPlay
+                playsInline
+                crossOrigin="anonymous"
                 className="w-full h-full object-contain"
                 poster={item.thumbnail}
+                onError={(e) => {
+                  const target = e.target as HTMLVideoElement;
+                  if (!target.src.includes('/api/download')) {
+                    target.src = `/api/download?url=${encodeURIComponent(directMp4Url)}`;
+                  }
+                }}
               />
             ) : (
               <div className="relative w-full h-full flex flex-col items-center justify-center text-center p-6 bg-slate-950">

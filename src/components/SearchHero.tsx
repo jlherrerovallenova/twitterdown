@@ -26,30 +26,30 @@ interface SearchHeroProps {
 }
 
 const CATEGORIES: CategoryPreset[] = [
-  { key: 'trending', label: 'Tendencias & Viral', icon: 'Flame', query: 'trending viral videos', tags: ['#Viral', '#Trending', '#Top'] },
-  { key: 'ai', label: 'Inteligencia Artificial', icon: 'Bot', query: 'inteligencia artificial AI deepseek chatgpt', tags: ['#AI', '#Tech', '#DeepSeek'] },
-  { key: 'gaming', label: 'Gaming & Streams', icon: 'Gamepad2', query: 'gaming gameplay highlights 2026', tags: ['#Gaming', '#Highlights', '#eSports'] },
-  { key: 'music', label: 'Música & Videoclips', icon: 'Music', query: 'musica official video clip top hits', tags: ['#Music', '#Videoclip', '#Hits'] },
-  { key: 'sports', label: 'Deportes & Goles', icon: 'Trophy', query: 'mejores jugadas futbol goles highlights', tags: ['#Futbol', '#Sports', '#Goles'] },
-  { key: 'cinema', label: 'Cine & Trailers', icon: 'Film', query: 'official trailer peliculas estrenos', tags: ['#Cine', '#Trailer', '#Estrenos'] },
-  { key: 'tech', label: 'Programación & Tech', icon: 'Code2', query: 'programacion desarrollo software tutorial', tags: ['#Programacion', '#Tech', '#Python'] },
-  { key: 'memes', label: 'Memes & Humor', icon: 'Smile', query: 'memes videos graciosos humor shorts', tags: ['#Memes', '#Humor', '#Risas'] },
-  { key: 'nsfw', label: '🔞 Adultos & +18', icon: 'Lock', query: 'top amateur trending', tags: ['#NSFW', '#Adult', '#18Plus'], isNsfw: true },
+  { key: 'trending', label: 'Tendencias & Viral en X', icon: 'Flame', query: 'viral trending clips x twitter', tags: ['#Viral', '#Trending', '#TopX'] },
+  { key: 'ai', label: 'Inteligencia Artificial', icon: 'Bot', query: 'ia inteligencia artificial deepseek openai claude', tags: ['#AI', '#Tech', '#DeepSeek'] },
+  { key: 'gaming', label: 'Gaming & eSports', icon: 'Gamepad2', query: 'gaming gameplay highlights esports clips', tags: ['#Gaming', '#Highlights', '#eSports'] },
+  { key: 'sports', label: 'Fútbol & Deportes', icon: 'Trophy', query: 'futbol goles jugadas champions messi ronaldo', tags: ['#Futbol', '#Sports', '#Goles'] },
+  { key: 'tech', label: 'Programación & Tech', icon: 'Code2', query: 'programacion tech software python developer', tags: ['#Tech', '#Python', '#Programacion'] },
+  { key: 'cinema', label: 'Cine & Trailers', icon: 'Film', query: 'trailer peliculas cine estrenos series clips', tags: ['#Cine', '#Trailer', '#Estrenos'] },
+  { key: 'music', label: 'Música & Conciertos', icon: 'Music', query: 'musica live show concierto videoclip', tags: ['#Music', '#Videoclip', '#Hits'] },
+  { key: 'memes', label: 'Memes & Humor en X', icon: 'Smile', query: 'memes humor risas videos graciosos tweet', tags: ['#Memes', '#Humor', '#Risas'] },
+  { key: 'nsfw', label: '🔞 Adultos & +18', icon: 'Lock', query: 'nsfw adult +18 viral top', tags: ['#NSFW', '#Adult', '#18Plus'], isNsfw: true },
 ];
 
 const POPULAR_TAGS = [
   '#AI',
-  '#Python',
-  '#Gaming',
-  '#Futbol',
-  '#Music',
-  '#Trailer',
   '#DeepSeek',
+  '#Python',
+  '#Futbol',
+  '#Champions',
+  '#Gaming',
+  '#GTA6',
+  '#SpaceX',
   '#Memes',
-  '#Tutorial',
-  '#Highlights',
-  '#Shorts',
   '#TechNews',
+  '#Trailer',
+  '#ViralTweets',
 ];
 
 export const SearchHero: React.FC<SearchHeroProps> = ({
@@ -150,18 +150,18 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
       {/* Badge */}
       <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200/80 text-sky-800 text-xs font-semibold shadow-xs mb-4">
         <Sparkles className="w-3.5 h-3.5 text-sky-600 animate-pulse" />
-        <span>Buscador Universal de Videos con IA & Etiquetas</span>
+        <span>Buscador Exclusivo de Videos de Twitter / X</span>
       </div>
 
       {/* Title */}
       <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-        Encuentra y Descarga Cualquier Video <br className="hidden sm:inline" />
+        Encuentra y Descarga Videos de <br className="hidden sm:inline" />
         <span className="bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          por Palabras Clave o Tags
+          Twitter / X por Palabras Clave o Tags
         </span>
       </h1>
       <p className="mt-3 text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
-        Busca millones de videos por tema, etiquetas (#tags), creadores o categorías.
+        Busca millones de videos y clips en X (Twitter) por tema, hashtags (#tags) o creadores.
         Reproduce al instante y descarga en 1080p Full HD, audio MP3 o GIFs recortados.
       </p>
 
@@ -178,7 +178,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onFocus={() => setIsFocused(true)}
-              placeholder="Ej: tutorial python, #AI, goles champions, lofi beats, trailers cine..."
+              placeholder="Ej: #AI, deepseek, goles messi, @elonmusk, clips gaming..."
               className="w-full bg-transparent text-slate-800 placeholder-slate-400 text-base sm:text-lg focus:outline-hidden px-2 py-2"
               autoComplete="off"
             />
