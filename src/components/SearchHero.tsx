@@ -3,12 +3,8 @@ import {
   Search,
   Sparkles,
   Flame,
-  Bot,
-  Gamepad2,
-  Music,
   Trophy,
   Film,
-  Code2,
   Smile,
   X,
   TrendingUp,
@@ -26,30 +22,29 @@ interface SearchHeroProps {
 }
 
 const CATEGORIES: CategoryPreset[] = [
-  { key: 'trending', label: 'Tendencias & Viral en X', icon: 'Flame', query: 'viral trending clips x twitter', tags: ['#Viral', '#Trending', '#TopX'] },
-  { key: 'ai', label: 'Inteligencia Artificial', icon: 'Bot', query: 'ia inteligencia artificial deepseek openai claude', tags: ['#AI', '#Tech', '#DeepSeek'] },
-  { key: 'gaming', label: 'Gaming & eSports', icon: 'Gamepad2', query: 'gaming gameplay highlights esports clips', tags: ['#Gaming', '#Highlights', '#eSports'] },
-  { key: 'sports', label: 'Fútbol & Deportes', icon: 'Trophy', query: 'futbol goles jugadas champions messi ronaldo', tags: ['#Futbol', '#Sports', '#Goles'] },
-  { key: 'tech', label: 'Programación & Tech', icon: 'Code2', query: 'programacion tech software python developer', tags: ['#Tech', '#Python', '#Programacion'] },
-  { key: 'cinema', label: 'Cine & Trailers', icon: 'Film', query: 'trailer peliculas cine estrenos series clips', tags: ['#Cine', '#Trailer', '#Estrenos'] },
-  { key: 'music', label: 'Música & Conciertos', icon: 'Music', query: 'musica live show concierto videoclip', tags: ['#Music', '#Videoclip', '#Hits'] },
-  { key: 'memes', label: 'Memes & Humor en X', icon: 'Smile', query: 'memes humor risas videos graciosos tweet', tags: ['#Memes', '#Humor', '#Risas'] },
-  { key: 'nsfw', label: '🔞 Adultos & +18', icon: 'Lock', query: 'nsfw adult +18 viral top', tags: ['#NSFW', '#Adult', '#18Plus'], isNsfw: true },
+  { key: 'trending', label: '🔥 Tendencias +18 en X', icon: 'Flame', query: 'trending viral nsfw 18 clips x', tags: ['#NSFW', '#Viral18', '#TwitterAfterDark'], isNsfw: true },
+  { key: 'amateur', label: '📹 Amateur & Casero', icon: 'Film', query: 'amateur casero homemade real video x', tags: ['#Amateur', '#Casero', '#Homemade'], isNsfw: true },
+  { key: 'onlyfans', label: '💎 OnlyFans & VIPs', icon: 'Sparkles', query: 'onlyfans leaks vip model clips preview x', tags: ['#OnlyFans', '#VIP', '#Models'], isNsfw: true },
+  { key: 'latina', label: '💃 Latinas & España +18', icon: 'Flame', query: 'latina espanol casero viral video x', tags: ['#Latina', '#Espana18', '#Caliente'], isNsfw: true },
+  { key: 'cosplay', label: '🎭 Cosplay & Erotic', icon: 'Smile', query: 'cosplay erotic anime hot clips x', tags: ['#Cosplay18', '#Erotic', '#Fetish'], isNsfw: true },
+  { key: 'pov', label: '👁️ POV & Solos', icon: 'Eye', query: 'pov perspective hd solo clips x', tags: ['#POV', '#Solo', '#HD1080p'], isNsfw: true },
+  { key: 'hardcore', label: '⚡ Hardcore & Climax', icon: 'Lock', query: 'hardcore intense climax viral x', tags: ['#Hardcore', '#Climax', '#18Plus'], isNsfw: true },
+  { key: 'topweekly', label: '⭐ Top Semanal X +18', icon: 'Trophy', query: 'top weekly best rated adult clips x', tags: ['#TopWeekly', '#BestNSFW', '#Hot'], isNsfw: true },
 ];
 
 const POPULAR_TAGS = [
-  '#AI',
-  '#DeepSeek',
-  '#Python',
-  '#Futbol',
-  '#Champions',
-  '#Gaming',
-  '#GTA6',
-  '#SpaceX',
-  '#Memes',
-  '#TechNews',
-  '#Trailer',
-  '#ViralTweets',
+  '#NSFW',
+  '#OnlyFans',
+  '#Amateur',
+  '#Casero',
+  '#Latina',
+  '#Cosplay18',
+  '#Viral18',
+  '#POV',
+  '#TwitterAfterDark',
+  '#Espana18',
+  '#Hardcore',
+  '#ModelVIP',
 ];
 
 export const SearchHero: React.FC<SearchHeroProps> = ({
@@ -77,7 +72,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
 
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search/suggestions?q=${encodeURIComponent(inputValue)}`);
+        const res = await fetch(`/api/search/suggestions?q=${encodeURIComponent(inputValue)}&nsfw=true`);
         if (res.ok) {
           const text = await res.text();
           try {
@@ -110,67 +105,65 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
     e.preventDefault();
     if (!inputValue.trim()) return;
     setIsFocused(false);
-    onSearch(inputValue.trim());
+    onSearch(inputValue.trim(), true);
   };
 
   const handleSelectSuggestion = (suggestion: string) => {
     setInputValue(suggestion);
     setIsFocused(false);
-    onSearch(suggestion);
+    onSearch(suggestion, true);
   };
 
   const handleCategoryClick = (cat: CategoryPreset) => {
     setActiveCategory(cat.key);
     setInputValue(cat.query);
-    onSearch(cat.query, cat.isNsfw);
+    onSearch(cat.query, true);
   };
 
   const handleTagClick = (tag: string) => {
     setInputValue(tag);
-    onSearch(tag);
+    onSearch(tag, true);
   };
 
   const renderIcon = (name: string) => {
     switch (name) {
-      case 'Flame': return <Flame className="w-4 h-4 text-orange-500" />;
-      case 'Bot': return <Bot className="w-4 h-4 text-purple-500" />;
-      case 'Gamepad2': return <Gamepad2 className="w-4 h-4 text-emerald-500" />;
-      case 'Music': return <Music className="w-4 h-4 text-pink-500" />;
-      case 'Trophy': return <Trophy className="w-4 h-4 text-amber-500" />;
-      case 'Film': return <Film className="w-4 h-4 text-rose-500" />;
-      case 'Code2': return <Code2 className="w-4 h-4 text-sky-500" />;
+      case 'Flame': return <Flame className="w-4 h-4 text-rose-500" />;
+      case 'Film': return <Film className="w-4 h-4 text-purple-500" />;
+      case 'Sparkles': return <Sparkles className="w-4 h-4 text-amber-500" />;
+      case 'Heart': return <Flame className="w-4 h-4 text-pink-500" />;
       case 'Smile': return <Smile className="w-4 h-4 text-yellow-500" />;
-      case 'Lock': return <Lock className="w-4 h-4 text-rose-500" />;
-      default: return <Sparkles className="w-4 h-4 text-sky-500" />;
+      case 'Eye': return <TrendingUp className="w-4 h-4 text-sky-500" />;
+      case 'Lock': return <Lock className="w-4 h-4 text-rose-600" />;
+      case 'Trophy': return <Trophy className="w-4 h-4 text-amber-500" />;
+      default: return <Sparkles className="w-4 h-4 text-rose-500" />;
     }
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto text-center px-4 pt-4 pb-2">
       {/* Badge */}
-      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200/80 text-sky-800 text-xs font-semibold shadow-xs mb-4">
-        <Sparkles className="w-3.5 h-3.5 text-sky-600 animate-pulse" />
-        <span>Buscador Exclusivo de Videos de Twitter / X</span>
+      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200/90 text-rose-800 text-xs font-semibold shadow-xs mb-4">
+        <Lock className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
+        <span>🔞 Buscador Exclusivo de Videos +18 en Twitter / X</span>
       </div>
 
       {/* Title */}
       <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-        Encuentra y Descarga Videos de <br className="hidden sm:inline" />
-        <span className="bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          Twitter / X por Palabras Clave o Tags
+        Buscador de Videos +18 de <br className="hidden sm:inline" />
+        <span className="bg-gradient-to-r from-rose-500 via-pink-600 to-red-600 bg-clip-text text-transparent">
+          Twitter / X Sin Censura
         </span>
       </h1>
       <p className="mt-3 text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
-        Busca millones de videos y clips en X (Twitter) por tema, hashtags (#tags) o creadores.
-        Reproduce al instante y descarga en 1080p Full HD, audio MP3 o GIFs recortados.
+        Explora y descarga millones de videos para adultos de X (Twitter): amateur, OnlyFans, modelos, caseros y cosplay en 1080p Full HD y MP3.
       </p>
 
       {/* Search Input Bar */}
       <div className="mt-8 relative max-w-3xl mx-auto" ref={dropdownRef}>
         <form onSubmit={handleSubmit} className="relative">
-          <div className="relative flex items-center bg-white rounded-2xl shadow-xl shadow-sky-500/5 border-2 border-slate-200 hover:border-sky-300 focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-500/10 transition-all duration-200 p-2">
+          <div className="relative flex items-center bg-white rounded-2xl shadow-xl shadow-rose-500/5 border-2 border-slate-200 hover:border-rose-300 focus-within:border-rose-500 focus-within:ring-4 focus-within:ring-rose-500/10 transition-all duration-200 p-2">
             <div className="pl-3 pr-2 text-slate-400">
-              <Search className="w-6 h-6 text-sky-500" />
+              <Search className="w-6 h-6 text-rose-500" />
             </div>
 
             <input
@@ -178,7 +171,7 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onFocus={() => setIsFocused(true)}
-              placeholder="Ej: #AI, deepseek, goles messi, @elonmusk, clips gaming..."
+              placeholder="Ej: #NSFW, onlyfans leaks, amateur casero, latina, cosplay, pov..."
               className="w-full bg-transparent text-slate-800 placeholder-slate-400 text-base sm:text-lg focus:outline-hidden px-2 py-2"
               autoComplete="off"
             />

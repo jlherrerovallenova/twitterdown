@@ -62,20 +62,6 @@ export function formatViews(views?: number): string {
   return views.toString();
 }
 
-const NSFW_KEYWORDS = [
-  'porn', 'porno', 'nsfw', 'xxx', 'hentai', 'sex', 'erotic', 'erotica',
-  'milf', 'amateur', 'babe', 'lesbian', 'boobs', 'tits', 'fetish',
-  'jav', 'blowjob', 'creampie', 'teen', 'anal', 'masturbation', 'nude',
-  'naked', 'onlyfans', 'webcam', 'erotico', 'tetas', 'culos', 'chicas',
-  'desnuda', 'desnudas', 'sexo', 'adulto', 'adult', '+18', '18+'
-];
-
-export function isNsfwQuery(query: string): boolean {
-  const lower = query.toLowerCase();
-  const words = lower.split(/[\s,+#_-]+/);
-  return words.some((w) => NSFW_KEYWORDS.includes(w)) || NSFW_KEYWORDS.some((kw) => lower.includes(kw));
-}
-
 function extractTags(title: string, description?: string): string[] {
   const set = new Set<string>();
   const fullText = `${title} ${description || ''}`;
@@ -87,21 +73,20 @@ function extractTags(title: string, description?: string): string[] {
   }
 
   const keywordMap: Record<string, string> = {
-    python: '#Python',
-    ia: '#IA',
-    ai: '#AI',
-    deepseek: '#DeepSeek',
-    chatgpt: '#ChatGPT',
-    gaming: '#Gaming',
-    musica: '#Musica',
-    music: '#Music',
-    trailer: '#Trailer',
-    meme: '#Meme',
-    futbol: '#Futbol',
-    tutorial: '#Tutorial',
-    tech: '#Tech',
-    clips: '#Clips',
-    viral: '#Viral',
+    onlyfans: '#OnlyFans',
+    amateur: '#Amateur',
+    latina: '#Latina',
+    cosplay: '#Cosplay18',
+    pov: '#POV',
+    casero: '#Casero',
+    erotic: '#Erotic',
+    erotica: '#Erotica',
+    model: '#Model',
+    viral: '#Viral18',
+    nsfw: '#NSFW',
+    climax: '#Climax',
+    hardcore: '#Hardcore',
+    fetish: '#Fetish',
   };
 
   const lower = fullText.toLowerCase();
@@ -114,194 +99,166 @@ function extractTags(title: string, description?: string): string[] {
   return Array.from(set).slice(0, 6);
 }
 
-const TWITTER_VIDEO_DATABASE: SearchResultItem[] = [
+const NSFW_TWITTER_DATABASE: SearchResultItem[] = [
   {
-    id: '1755610283038622101',
-    title: 'Starship Orbital Flight Test & Super Heavy Booster Landing | SpaceX',
-    description: 'Impresionante despegue y regreso de la etapa propulsora Starship captado en ultra alta definición.',
-    thumbnail: 'https://images.unsplash.com/photo-1517976487507-5b3b4a450910?w=800&auto=format&fit=crop&q=80',
-    duration: 142,
-    durationFormatted: '02:22',
-    uploader: 'SpaceX (@SpaceX)',
-    uploaderAvatar: 'https://pbs.twimg.com/profile_images/1082744382585856001/rH_230td_normal.jpg',
-    platform: 'twitter',
-    views: 8420000,
-    viewsFormatted: '8.4M',
-    likes: 342000,
-    retweets: 58000,
-    uploadedAt: 'Hace 2 días',
-    url: 'https://x.com/SpaceX/status/1755610283038622101',
-    tags: ['#SpaceX', '#Starship', '#Viral', '#Tech', '#Trending'],
-  },
-  {
-    id: '1789421098472890368',
-    title: 'Elon Musk presenta los avances de Optimus Gen 3 y Robótica Humanoide',
-    description: 'Optimus realizando tareas de precisión autónoma en tiempo real con redes neuronales.',
-    thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&auto=format&fit=crop&q=80',
-    duration: 98,
-    durationFormatted: '01:38',
-    uploader: 'Elon Musk (@elonmusk)',
-    uploaderAvatar: 'https://pbs.twimg.com/profile_images/1780044485541699584/p78MCnZr_normal.jpg',
-    platform: 'twitter',
-    views: 14200000,
-    viewsFormatted: '14.2M',
-    likes: 489000,
-    retweets: 92000,
-    uploadedAt: 'Hace 3 días',
-    url: 'https://x.com/elonmusk/status/1789421098472890368',
-    tags: ['#Optimus', '#Tesla', '#Robotics', '#AI', '#Viral'],
-  },
-  {
-    id: '1882049182390192830',
-    title: 'DeepSeek-R1 y DeepSeek-V3: Comparativa de razonamiento matemático y código',
-    description: 'Demostración paso a paso de las capacidades del modelo Open Source DeepSeek en tareas complejas.',
-    thumbnail: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=800&auto=format&fit=crop&q=80',
+    id: '1889201928301928301',
+    title: 'Amateur Casero Exclusivo en Pareja | Grabación Íntima HD 1080p',
+    description: 'Sesión casera espontánea y sin censura compartida en Twitter / X con máxima calidad de audio y video.',
+    thumbnail: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80',
     duration: 185,
     durationFormatted: '03:05',
-    uploader: 'DeepSeek AI (@deepseek_ai)',
-    uploaderAvatar: 'https://pbs.twimg.com/profile_images/1745678129037418496/U1qC20c-_normal.jpg',
+    uploader: 'Pareja Casera VIP (@ParejaReal_X)',
+    uploaderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     platform: 'twitter',
-    views: 3190000,
-    viewsFormatted: '3.1M',
-    likes: 128000,
-    retweets: 24000,
-    uploadedAt: 'Hace 1 día',
-    url: 'https://x.com/deepseek_ai/status/1882049182390192830',
-    tags: ['#DeepSeek', '#AI', '#InteligenciaArtificial', '#OpenSource', '#Tech'],
-  },
-  {
-    id: '1845129381029384910',
-    title: 'OpenAI Sora Video Generation: Ejemplos fotorrealistas en 1080p 60fps',
-    description: 'Nuevos videos cinematográficos generados enteramente mediante prompts de texto con OpenAI Sora.',
-    thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
-    duration: 60,
-    durationFormatted: '01:00',
-    uploader: 'OpenAI (@OpenAI)',
-    uploaderAvatar: 'https://pbs.twimg.com/profile_images/1634058036934500352/b4Tu1dsx_normal.jpg',
-    platform: 'twitter',
-    views: 9800000,
-    viewsFormatted: '9.8M',
-    likes: 310000,
-    retweets: 67000,
-    uploadedAt: 'Hace 4 días',
-    url: 'https://x.com/OpenAI/status/1845129381029384910',
-    tags: ['#OpenAI', '#Sora', '#GenerativeAI', '#AI', '#VideoAI'],
-  },
-  {
-    id: '1812938192039120934',
-    title: 'GOLAZO HISTÓRICO | Jugada maestra y definición al ángulo en el minuto 93',
-    description: 'Revive el espectacular gol desde fuera del área en alta definición con repetición multicámara.',
-    thumbnail: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop&q=80',
-    duration: 54,
-    durationFormatted: '00:54',
-    uploader: 'Champions League (@ChampionsLeague)',
-    uploaderAvatar: 'https://pbs.twimg.com/profile_images/1795764024849195008/7G58_U_F_normal.jpg',
-    platform: 'twitter',
-    views: 6540000,
-    viewsFormatted: '6.5M',
-    likes: 215000,
-    retweets: 38000,
-    uploadedAt: 'Hace 5 días',
-    url: 'https://x.com/ChampionsLeague/status/1812938192039120934',
-    tags: ['#Futbol', '#Champions', '#Golazo', '#Goles', '#Sports'],
-  },
-  {
-    id: '1823901928301928301',
-    title: 'Exclusiva: Última hora del mercado de fichajes de verano | Fabrizio Romano',
-    description: 'Here We Go confirmado! Todos los detalles del nuevo acuerdo multimillonario.',
-    thumbnail: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80',
-    duration: 110,
-    durationFormatted: '01:50',
-    uploader: 'Fabrizio Romano (@FabrizioRomano)',
-    uploaderAvatar: 'https://pbs.twimg.com/profile_images/1487834578138980352/T_s23O_q_normal.jpg',
-    platform: 'twitter',
-    views: 5120000,
-    viewsFormatted: '5.1M',
-    likes: 198000,
-    retweets: 42000,
-    uploadedAt: 'Hace 1 día',
-    url: 'https://x.com/FabrizioRomano/status/1823901928301928301',
-    tags: ['#HereWeGo', '#FabrizioRomano', '#Fichajes', '#Futbol', '#Mercado'],
-  },
-  {
-    id: '1792384910293849102',
-    title: 'Clutch Imposible 1v5 en la Gran Final del Torneo Internacional de CS2',
-    description: 'Jugada decisiva que corona a los campeones mundiales con narración en vivo.',
-    thumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80',
-    duration: 88,
-    durationFormatted: '01:28',
-    uploader: 'ESL Counter-Strike (@ESLCS)',
-    uploaderAvatar: 'https://pbs.twimg.com/profile_images/1699745341497950208/g4L58N2X_normal.jpg',
-    platform: 'twitter',
-    views: 2430000,
-    viewsFormatted: '2.4M',
-    likes: 95000,
-    retweets: 18000,
-    uploadedAt: 'Hace 2 días',
-    url: 'https://x.com/ESLCS/status/1792384910293849102',
-    tags: ['#Gaming', '#CS2', '#Esports', '#Clutch', '#Highlights'],
-  },
-  {
-    id: '1803928192039182301',
-    title: 'Grand Theft Auto VI (GTA 6): Nuevo teaser con físicas de agua y colisiones',
-    description: 'Detalles visuales y nuevo motor gráfico RAGE en el esperado regreso a Vice City.',
-    thumbnail: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800&auto=format&fit=crop&q=80',
-    duration: 75,
-    durationFormatted: '01:15',
-    uploader: 'Rockstar Games (@RockstarGames)',
-    uploaderAvatar: 'https://pbs.twimg.com/profile_images/1730999516671049728/r6dK_s3K_normal.jpg',
-    platform: 'twitter',
-    views: 18900000,
-    viewsFormatted: '18.9M',
-    likes: 890000,
-    retweets: 240000,
-    uploadedAt: 'Hace 6 días',
-    url: 'https://x.com/RockstarGames/status/1803928192039182301',
-    tags: ['#GTA6', '#RockstarGames', '#Gaming', '#Trailer', '#ViceCity'],
-  },
-  {
-    id: '1772839102938192830',
-    title: 'Trucos Pro de Python en 60 segundos que aceleran tu código x10',
-    description: 'Aprende decoradores avanzados, list comprehensions y type hinting limpio con ejemplos.',
-    thumbnail: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80',
-    duration: 60,
-    durationFormatted: '01:00',
-    uploader: 'Python Software (@ThePSF)',
-    uploaderAvatar: 'https://pbs.twimg.com/profile_images/439154912970514432/pLXB1dpP_normal.png',
-    platform: 'twitter',
-    views: 1890000,
+    views: 1840000,
     viewsFormatted: '1.8M',
-    likes: 72000,
-    retweets: 15000,
-    uploadedAt: 'Hace 3 días',
-    url: 'https://x.com/ThePSF/status/1772839102938192830',
-    tags: ['#Python', '#Programacion', '#Coding', '#Tech', '#Tutorial'],
+    likes: 94000,
+    retweets: 21000,
+    uploadedAt: 'Hace 4 horas',
+    url: 'https://x.com/ParejaReal_X/status/1889201928301928301',
+    tags: ['#Amateur', '#Casero', '#NSFW', '#Homemade', '#Viral18'],
+    isNsfw: true,
   },
   {
-    id: '1879201928301928301',
-    title: 'Model Cosplay Viral Video Clip +18 HD',
-    description: 'Sesión exclusiva en alta definición para fans.',
-    thumbnail: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80',
-    duration: 48,
-    durationFormatted: '00:48',
-    uploader: 'Exclusive Models (@VIPModels)',
-    uploaderAvatar: 'https://pbs.twimg.com/profile_images/1879201928/vip_normal.jpg',
+    id: '1889201928301928302',
+    title: 'OnlyFans VIP Model Preview | Sesión Privada Lencería y Primer Plano',
+    description: 'Adelanto oficial de la nueva sesión de fotos y video exclusivo para suscriptores en X.',
+    thumbnail: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&auto=format&fit=crop&q=80',
+    duration: 120,
+    durationFormatted: '02:00',
+    uploader: 'Valentina VIP (@ValenOnlyVIP)',
+    uploaderAvatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80',
     platform: 'twitter',
-    views: 1200000,
-    viewsFormatted: '1.2M',
-    likes: 84000,
-    retweets: 12000,
+    views: 3200000,
+    viewsFormatted: '3.2M',
+    likes: 185000,
+    retweets: 45000,
+    uploadedAt: 'Hace 6 horas',
+    url: 'https://x.com/ValenOnlyVIP/status/1889201928301928302',
+    tags: ['#OnlyFans', '#VIP', '#Model', '#Lenceria', '#NSFW'],
+    isNsfw: true,
+  },
+  {
+    id: '1889201928301928303',
+    title: 'Latina Caliente Casero Viral | Video Íntimo Sin Cortes',
+    description: 'El video más compartido de la semana en el timeline nocturno de Twitter España y Latinoamérica.',
+    thumbnail: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800&auto=format&fit=crop&q=80',
+    duration: 95,
+    durationFormatted: '01:35',
+    uploader: 'Camila Latina (@CamiHot_X)',
+    uploaderAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+    platform: 'twitter',
+    views: 4500000,
+    viewsFormatted: '4.5M',
+    likes: 240000,
+    retweets: 62000,
+    uploadedAt: 'Hace 1 día',
+    url: 'https://x.com/CamiHot_X/status/1889201928301928303',
+    tags: ['#Latina', '#Casero', '#Viral', '#Espana18', '#NSFW'],
+    isNsfw: true,
+  },
+  {
+    id: '1889201928301928304',
+    title: 'Cosplay Erotic 4K | 2B Nier Automata Sesión Especial +18',
+    description: 'Transformación fotorrealista con vestuario de látex y escenas explícitas exclusivas.',
+    thumbnail: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80',
+    duration: 140,
+    durationFormatted: '02:20',
+    uploader: 'Yuki Cosplay +18 (@YukiCosplay_NSFW)',
+    uploaderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    platform: 'twitter',
+    views: 2900000,
+    viewsFormatted: '2.9M',
+    likes: 140000,
+    retweets: 38000,
     uploadedAt: 'Hace 2 días',
-    url: 'https://x.com/VIPModels/status/1879201928301928301',
-    tags: ['#NSFW', '#Adult', '#18Plus', '#Cosplay', '#Model'],
+    url: 'https://x.com/YukiCosplay_NSFW/status/1889201928301928304',
+    tags: ['#Cosplay18', '#Anime', '#Erotic', '#Nier', '#NSFW'],
+    isNsfw: true,
+  },
+  {
+    id: '1889201928301928305',
+    title: 'POV Experience Inmersiva en Primera Persona | Directo a Cámara HD',
+    description: 'Grabación con arnés POV de alta estabilidad con sonido binaural envolvente.',
+    thumbnail: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=800&auto=format&fit=crop&q=80',
+    duration: 210,
+    durationFormatted: '03:30',
+    uploader: 'POV Master (@POVMaster_X)',
+    uploaderAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    platform: 'twitter',
+    views: 5100000,
+    viewsFormatted: '5.1M',
+    likes: 295000,
+    retweets: 78000,
+    uploadedAt: 'Hace 1 día',
+    url: 'https://x.com/POVMaster_X/status/1889201928301928305',
+    tags: ['#POV', '#Solo', '#Intense', '#HD1080p', '#NSFW'],
+    isNsfw: true,
+  },
+  {
+    id: '1889201928301928306',
+    title: 'Hardcore Climax Viral | Momentos Intensos y Final Épico',
+    description: 'Los clips más votados por la comunidad de Twitter After Dark en una sola entrega.',
+    thumbnail: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&auto=format&fit=crop&q=80',
+    duration: 160,
+    durationFormatted: '02:40',
+    uploader: 'Climax Daily (@ClimaxDaily_X)',
+    uploaderAvatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80',
+    platform: 'twitter',
+    views: 6800000,
+    viewsFormatted: '6.8M',
+    likes: 380000,
+    retweets: 99000,
+    uploadedAt: 'Hace 3 días',
+    url: 'https://x.com/ClimaxDaily_X/status/1889201928301928306',
+    tags: ['#Hardcore', '#Climax', '#18Plus', '#Viral', '#NSFW'],
+    isNsfw: true,
+  },
+  {
+    id: '1889201928301928307',
+    title: 'Modelos España & Ibiza Summer Special +18 | Behind The Scenes',
+    description: 'Detrás de cámaras de las modelos más populares del verano en las islas baleares.',
+    thumbnail: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&auto=format&fit=crop&q=80',
+    duration: 175,
+    durationFormatted: '02:55',
+    uploader: 'Ibiza Models VIP (@IbizaModels_X)',
+    uploaderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    platform: 'twitter',
+    views: 2100000,
+    viewsFormatted: '2.1M',
+    likes: 110000,
+    retweets: 29000,
+    uploadedAt: 'Hace 2 días',
+    url: 'https://x.com/IbizaModels_X/status/1889201928301928307',
+    tags: ['#Ibiza', '#Model', '#Espana18', '#VIP', '#NSFW'],
+    isNsfw: true,
+  },
+  {
+    id: '1889201928301928308',
+    title: 'Solo Cam Show & Interacción Privada | Calidad Ultra HD',
+    description: 'Transmisión exclusiva con chat en vivo y peticiones especiales en tiempo real.',
+    thumbnail: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=80',
+    duration: 130,
+    durationFormatted: '02:10',
+    uploader: 'Cam Angel VIP (@CamAngel_X)',
+    uploaderAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+    platform: 'twitter',
+    views: 3700000,
+    viewsFormatted: '3.7M',
+    likes: 190000,
+    retweets: 48000,
+    uploadedAt: 'Hace 1 día',
+    url: 'https://x.com/CamAngel_X/status/1889201928301928308',
+    tags: ['#Solo', '#Webcam', '#VIP', '#Sexy', '#NSFW'],
     isNsfw: true,
   },
 ];
 
 async function fetchDirectTweet(query: string): Promise<SearchResultItem | null> {
-  const match = query.match(/(?:twitter\.com|x\.com)\/(?:#!\/)?(?:[a-zA-Z0-9_]+)\/status(?:es)?\/(\d+)/i)
-    || query.match(/(?:twitter\.com|x\.com)\/i\/status\/(\d+)/i)
-    || query.match(/^(\d{8,25})$/);
+  const match =
+    query.match(/(?:twitter\.com|x\.com)\/(?:#!\/)?(?:[a-zA-Z0-9_]+)\/status(?:es)?\/(\d+)/i) ||
+    query.match(/(?:twitter\.com|x\.com)\/i\/status\/(\d+)/i) ||
+    query.match(/^(\d{8,25})$/);
 
   if (!match) return null;
   const tweetId = match[1];
@@ -312,7 +269,7 @@ async function fetchDirectTweet(query: string): Promise<SearchResultItem | null>
     });
     if (!res.ok) return null;
 
-    const body = await res.json() as {
+    const body = (await res.json()) as {
       tweet?: {
         id: string;
         url: string;
@@ -340,8 +297,8 @@ async function fetchDirectTweet(query: string): Promise<SearchResultItem | null>
     }
 
     const video = videoList[0];
-    const duration = Math.round(video?.duration || 30);
-    const text = tweet.text || 'Video de Twitter / X';
+    const duration = Math.round(video?.duration || 35);
+    const text = tweet.text || 'Video +18 de Twitter / X';
 
     return {
       id: tweet.id,
@@ -353,13 +310,14 @@ async function fetchDirectTweet(query: string): Promise<SearchResultItem | null>
       uploader: `${tweet.author.name} (@${tweet.author.screen_name})`,
       uploaderAvatar: tweet.author.avatar_url,
       platform: 'twitter',
-      views: tweet.views,
-      viewsFormatted: formatViews(tweet.views),
-      likes: tweet.likes,
-      retweets: tweet.retweets,
-      uploadedAt: tweet.created_at,
+      views: tweet.views || 350000,
+      viewsFormatted: formatViews(tweet.views || 350000),
+      likes: tweet.likes || 18000,
+      retweets: tweet.retweets || 4200,
+      uploadedAt: tweet.created_at || 'Reciente',
       url: tweet.url || `https://x.com/i/status/${tweet.id}`,
       tags: extractTags(text),
+      isNsfw: true,
     };
   } catch {
     return null;
@@ -383,11 +341,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const duration = (req.query.duration as 'all' | 'short' | 'medium' | 'long') || 'all';
     const sortBy = (req.query.sortBy as 'relevance' | 'views' | 'date' | 'duration_asc' | 'duration_desc') || 'relevance';
-    const nsfw = req.query.nsfw === 'true' || isNsfwQuery(query);
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 24;
 
-    const cacheKey = `tw_${query.toLowerCase()}_${duration}_${sortBy}_${nsfw ? 'nsfw' : 'safe'}_p${page}_${limit}`;
+    const cacheKey = `tw_nsfw_${query.toLowerCase()}_${duration}_${sortBy}_p${page}_${limit}`;
     const cached = searchCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
       return res.status(200).json({
@@ -412,24 +369,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const tokens: string[] = [];
 
     const synonymMap: Record<string, string[]> = {
-      ia: ['ai', 'deepseek', 'openai', 'inteligencia'],
-      ai: ['ia', 'deepseek', 'openai', 'sora'],
-      deepseek: ['ia', 'ai', 'r1', 'v3'],
-      futbol: ['football', 'champions', 'golazo', 'goles'],
-      football: ['futbol', 'champions', 'golazo', 'goles'],
-      musica: ['music', 'live', 'concierto'],
-      music: ['musica', 'live', 'hits'],
-      pelicula: ['cine', 'trailer', 'film', 'series'],
-      peliculas: ['cine', 'trailer', 'film', 'series'],
-      gaming: ['gameplay', 'esports', 'stream', 'gta', 'cs2'],
-      juegos: ['gaming', 'gameplay', 'highlights'],
+      amateur: ['casero', 'homemade', 'real', 'pareja'],
+      casero: ['amateur', 'homemade', 'real', 'pareja'],
+      onlyfans: ['vip', 'model', 'exclusive', 'lenceria'],
+      latina: ['espanol', 'espana', 'caliente', 'ibiza'],
+      cosplay: ['anime', 'erotic', 'fetish', 'latex'],
+      pov: ['solo', 'inmersivo', 'hd', 'primerplano'],
+      hardcore: ['climax', 'intense', '18plus', 'viral'],
+      hot: ['caliente', 'sexy', 'vip', 'viral'],
     };
 
     for (const t of rawTokens) {
       tokens.push(t);
       if (synonymMap[t]) tokens.push(...synonymMap[t]);
     }
-    let pool = TWITTER_VIDEO_DATABASE.filter((item) => (nsfw ? true : !item.isNsfw));
+
+    const pool = NSFW_TWITTER_DATABASE;
 
     const scored = pool.map((item) => {
       let score = 0;
@@ -471,6 +426,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ...item,
       id: `${item.id}-${idx}`,
       platform: 'twitter',
+      isNsfw: true,
       tags: item.tags.includes(queryTag) ? item.tags : [queryTag, ...item.tags].slice(0, 5),
     }));
 

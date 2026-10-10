@@ -2,58 +2,59 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const CATEGORY_PRESETS = {
   trending: {
-    label: 'Tendencias & Viral',
+    label: '🔥 Tendencias +18 en X',
     icon: 'Flame',
-    query: 'trending viral videos 2026',
-    tags: ['#Viral', '#Trending', '#Top', '#Clips', '#Popular'],
+    query: 'trending viral nsfw 18 clips x',
+    tags: ['#NSFW', '#Viral18', '#TrendingX', '#HotClips', '#TwitterAfterDark'],
+    isNsfw: true,
   },
-  ai: {
-    label: 'Inteligencia Artificial',
-    icon: 'Bot',
-    query: 'inteligencia artificial novedades AI deepseek chatgpt',
-    tags: ['#AI', '#InteligenciaArtificial', '#Tech', '#DeepSeek', '#OpenAI'],
-  },
-  gaming: {
-    label: 'Gaming & Streams',
-    icon: 'Gamepad2',
-    query: 'gaming highlights gameplay 2026 español',
-    tags: ['#Gaming', '#Gameplay', '#Twitch', '#Highlights', '#eSports'],
-  },
-  music: {
-    label: 'Música & Videoclips',
-    icon: 'Music',
-    query: 'musica official video clip top hits',
-    tags: ['#Music', '#Videoclip', '#Hits', '#Pop', '#Urban'],
-  },
-  sports: {
-    label: 'Deportes & Fútbol',
-    icon: 'Trophy',
-    query: 'mejores jugadas futbol goles highlights',
-    tags: ['#Futbol', '#Sports', '#Goles', '#Highlights', '#Champions'],
-  },
-  cinema: {
-    label: 'Cine & Trailers',
+  amateur: {
+    label: '📹 Amateur & Casero',
     icon: 'Film',
-    query: 'official trailer peliculas estrenos español',
-    tags: ['#Cine', '#Trailer', '#Peliculas', '#Series', '#Estrenos'],
+    query: 'amateur casero homemade real video x',
+    tags: ['#Amateur', '#Casero', '#Homemade', '#Real', '#Viral'],
+    isNsfw: true,
   },
-  tech: {
-    label: 'Programación & Tech',
-    icon: 'Code2',
-    query: 'programacion desarrollo software tutorial tech',
-    tags: ['#Programacion', '#Tech', '#Tutorial', '#Python', '#React'],
+  onlyfans: {
+    label: '💎 OnlyFans & VIPs',
+    icon: 'Sparkles',
+    query: 'onlyfans leaks vip model clips preview x',
+    tags: ['#OnlyFans', '#VIP', '#Models', '#Exclusive', '#Hot'],
+    isNsfw: true,
   },
-  memes: {
-    label: 'Memes & Humor',
+  latina: {
+    label: '💃 Latinas & España +18',
+    icon: 'Heart',
+    query: 'latina espanol casero viral video x',
+    tags: ['#Latina', '#Espana18', '#Casero', '#Caliente', '#Hot'],
+    isNsfw: true,
+  },
+  cosplay: {
+    label: '🎭 Cosplay & Erotic',
     icon: 'Smile',
-    query: 'memes videos graciosos humor shorts tiktok',
-    tags: ['#Memes', '#Humor', '#Risas', '#Funny', '#TikTok'],
+    query: 'cosplay erotic anime hot clips x',
+    tags: ['#Cosplay18', '#Erotic', '#Anime', '#Fetish', '#Sexy'],
+    isNsfw: true,
   },
-  nsfw: {
-    label: '🔞 Adultos & +18',
+  pov: {
+    label: '👁️ POV & Primer Plano',
+    icon: 'Eye',
+    query: 'pov perspective hd solo clips x',
+    tags: ['#POV', '#Solo', '#HD', '#Exclusive', '#Intense'],
+    isNsfw: true,
+  },
+  hardcore: {
+    label: '⚡ Hardcore & Intenso',
     icon: 'Lock',
-    query: 'top amateur viral trending',
-    tags: ['#NSFW', '#Adult', '#18Plus', '#Amateur', '#Trending'],
+    query: 'hardcore intense climax viral x',
+    tags: ['#Hardcore', '#Climax', '#Intense', '#18Plus', '#UltraHD'],
+    isNsfw: true,
+  },
+  topweekly: {
+    label: '⭐ Top Semanal X +18',
+    icon: 'Trophy',
+    query: 'top weekly best rated adult clips x',
+    tags: ['#TopWeekly', '#BestNSFW', '#ViralTweets', '#Popular', '#HD1080p'],
     isNsfw: true,
   },
 };

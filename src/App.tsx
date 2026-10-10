@@ -28,7 +28,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'search' | 'downloader' | 'favorites'>('search');
 
   // Search state
-  const [searchQuery, setSearchQuery] = useState('trending viral videos');
+  const [searchQuery, setSearchQuery] = useState('trending viral nsfw 18 clips x');
   const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -37,10 +37,11 @@ export const App: React.FC = () => {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filters, setFilters] = useState<SearchFilters>({
-    query: 'trending viral videos',
-    platform: 'all',
+    query: 'trending viral nsfw 18 clips x',
+    platform: 'twitter',
     duration: 'all',
     sortBy: 'relevance',
+    nsfw: true,
   });
 
   // Modal Player & Trimmer state
@@ -150,11 +151,11 @@ export const App: React.FC = () => {
 
   // Initial search on mount
   useEffect(() => {
-    performSearch('trending viral videos');
+    performSearch('trending viral nsfw 18 clips x');
   }, []);
 
   const handleFilterChange = (updated: Partial<SearchFilters>) => {
-    const nextFilters = { ...filters, ...updated };
+    const nextFilters = { ...filters, ...updated, nsfw: true };
     setFilters(nextFilters);
     performSearch(searchQuery, nextFilters, 1, false);
   };
@@ -162,10 +163,10 @@ export const App: React.FC = () => {
   const handleResetFilters = () => {
     const defaultFilters: SearchFilters = {
       query: searchQuery,
-      platform: 'all',
+      platform: 'twitter',
       duration: 'all',
       sortBy: 'relevance',
-      nsfw: false,
+      nsfw: true,
     };
     setFilters(defaultFilters);
     performSearch(searchQuery, defaultFilters, 1, false);

@@ -6,8 +6,6 @@ import {
   Clock,
   TrendingUp,
   RotateCcw,
-  ShieldCheck,
-  ShieldAlert,
 } from 'lucide-react';
 import { SearchFilters } from '../types';
 
@@ -35,57 +33,18 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
         <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
           {/* Filter Icon Label */}
           <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider pr-2 border-r border-slate-200">
-            <SlidersHorizontal className="w-4 h-4 text-sky-600" />
-            <span>Filtros</span>
+            <SlidersHorizontal className="w-4 h-4 text-rose-600" />
+            <span>Filtros +18</span>
           </div>
 
-          {/* Platform Filter */}
-          <div className="flex items-center bg-slate-100/90 p-1 rounded-xl">
-            <button
-              onClick={() => onChangeFilters({ platform: 'twitter' })}
-              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition ${
-                filters.platform === 'twitter' || filters.platform === 'all'
-                  ? 'bg-black text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <span className="font-black text-xs">𝕏</span>
-              <span>Twitter / X</span>
-            </button>
-            <button
-              onClick={() => onChangeFilters({ platform: 'nsfw', nsfw: true })}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition ${
-                filters.platform === 'nsfw' || filters.nsfw
-                  ? 'bg-rose-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-rose-600'
-              }`}
-            >
-              🔞 +18 en X
-            </button>
+          {/* Platform Badge */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-xs">
+            <span className="font-black text-xs">𝕏</span>
+            <span>Twitter / X</span>
+            <span className="px-1.5 py-0.5 rounded bg-rose-600 text-[10px] font-black uppercase ml-1">
+              +18 NSFW
+            </span>
           </div>
-
-          {/* SafeSearch / NSFW Toggle */}
-          <button
-            onClick={() => onChangeFilters({ nsfw: !filters.nsfw })}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
-              filters.nsfw
-                ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
-                : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-            }`}
-            title={filters.nsfw ? 'Modo +18 activo (Resultados sin censura)' : 'Filtro seguro activado'}
-          >
-            {filters.nsfw ? (
-              <>
-                <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
-                <span>Modo +18: ON</span>
-              </>
-            ) : (
-              <>
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>SafeSearch</span>
-              </>
-            )}
-          </button>
 
           {/* Duration Filter */}
           <div className="flex items-center gap-1.5">
