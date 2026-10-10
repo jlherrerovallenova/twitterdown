@@ -28,7 +28,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'search' | 'downloader' | 'favorites'>('search');
 
   // Search state
-  const [searchQuery, setSearchQuery] = useState('trending viral nsfw 18 clips x');
+  const [searchQuery, setSearchQuery] = useState('viral');
   const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -37,7 +37,7 @@ export const App: React.FC = () => {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filters, setFilters] = useState<SearchFilters>({
-    query: 'trending viral nsfw 18 clips x',
+    query: 'viral',
     platform: 'twitter',
     duration: 'all',
     sortBy: 'relevance',

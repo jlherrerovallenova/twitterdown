@@ -22,14 +22,14 @@ interface SearchHeroProps {
 }
 
 const CATEGORIES: CategoryPreset[] = [
-  { key: 'trending', label: '🔥 Tendencias +18 en X', icon: 'Flame', query: 'trending viral nsfw 18 clips x', tags: ['#NSFW', '#Viral18', '#TwitterAfterDark'], isNsfw: true },
-  { key: 'amateur', label: '📹 Amateur & Casero', icon: 'Film', query: 'amateur casero homemade real video x', tags: ['#Amateur', '#Casero', '#Homemade'], isNsfw: true },
-  { key: 'onlyfans', label: '💎 OnlyFans & VIPs', icon: 'Sparkles', query: 'onlyfans leaks vip model clips preview x', tags: ['#OnlyFans', '#VIP', '#Models'], isNsfw: true },
-  { key: 'latina', label: '💃 Latinas & España +18', icon: 'Flame', query: 'latina espanol casero viral video x', tags: ['#Latina', '#Espana18', '#Caliente'], isNsfw: true },
-  { key: 'cosplay', label: '🎭 Cosplay & Erotic', icon: 'Smile', query: 'cosplay erotic anime hot clips x', tags: ['#Cosplay18', '#Erotic', '#Fetish'], isNsfw: true },
-  { key: 'pov', label: '👁️ POV & Solos', icon: 'Eye', query: 'pov perspective hd solo clips x', tags: ['#POV', '#Solo', '#HD1080p'], isNsfw: true },
-  { key: 'hardcore', label: '⚡ Hardcore & Climax', icon: 'Lock', query: 'hardcore intense climax viral x', tags: ['#Hardcore', '#Climax', '#18Plus'], isNsfw: true },
-  { key: 'topweekly', label: '⭐ Top Semanal X +18', icon: 'Trophy', query: 'top weekly best rated adult clips x', tags: ['#TopWeekly', '#BestNSFW', '#Hot'], isNsfw: true },
+  { key: 'trending', label: '🔥 Tendencias +18 en X', icon: 'Flame', query: 'viral', tags: ['#NSFW', '#Viral18', '#TwitterAfterDark'], isNsfw: true },
+  { key: 'amateur', label: '📹 Amateur & Casero', icon: 'Film', query: 'amateur casero', tags: ['#Amateur', '#Casero', '#Homemade'], isNsfw: true },
+  { key: 'onlyfans', label: '💎 OnlyFans & VIPs', icon: 'Sparkles', query: 'onlyfans', tags: ['#OnlyFans', '#VIP', '#Models'], isNsfw: true },
+  { key: 'latina', label: '💃 Latinas & España +18', icon: 'Flame', query: 'latina espanol', tags: ['#Latina', '#Espana18', '#Caliente'], isNsfw: true },
+  { key: 'cosplay', label: '🎭 Cosplay & Erotic', icon: 'Smile', query: 'cosplay', tags: ['#Cosplay18', '#Erotic', '#Fetish'], isNsfw: true },
+  { key: 'pov', label: '👁️ POV & Solos', icon: 'Eye', query: 'pov', tags: ['#POV', '#Solo', '#HD1080p'], isNsfw: true },
+  { key: 'hardcore', label: '⚡ Hardcore & Climax', icon: 'Lock', query: 'hardcore', tags: ['#Hardcore', '#Climax', '#18Plus'], isNsfw: true },
+  { key: 'topweekly', label: '⭐ Top Semanal X +18', icon: 'Trophy', query: 'popular', tags: ['#TopWeekly', '#BestNSFW', '#Hot'], isNsfw: true },
 ];
 
 const POPULAR_TAGS = [
