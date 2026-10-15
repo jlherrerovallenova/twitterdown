@@ -3,14 +3,14 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 export default function handler(_req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.status(200).json({
-    version: '2.6.0',
-    title: 'Arquitectura Serverless 100% Blindada y Alta Disponibilidad',
-    releaseDate: '2026-10-10',
+    version: '3.0.0',
+    title: 'Descargador de Videos Ultra Rápido y Optimizado',
+    releaseDate: '2026-10-15',
     notes: [
-      'Eliminado error 500 del servidor con arquitectura serverless autónoma',
-      'Timeout seguro y contingencia garantizada con HTTP 200 siempre',
-      'Compatibilidad total en Vercel, móviles y ordenadores de escritorio',
-      'Paginación fluida y carga continua de videos sin interrupciones',
+      'Modo exclusivo de descargas de alta velocidad para Twitter / X',
+      'Eliminadas dependencias y sobrecarga para una carga instantánea',
+      'Extracción optimizada de videos hasta 1080p FHD y pistas de audio MP3',
+      'Previsualización fluida y recorte de clips con descarga directa',
     ],
   });
 }

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { Film, Music, Image as ImageIcon, AlertTriangle, RefreshCw } from 'lucide-react';
 import { VideoFormat } from '../types';
 import { VideoTrimmer } from './VideoTrimmer';
@@ -22,19 +22,13 @@ export const VideoPlayerPreview: React.FC<VideoPlayerPreviewProps> = ({
   const [useProxy, setUseProxy] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  // Reset error states when format changes
-  useEffect(() => {
-    setUseProxy(false);
-    setHasError(false);
-  }, [selectedFormat?.url]);
-
   const directUrl = selectedFormat?.url || '';
   const proxyUrl = directUrl ? `/api/download?url=${encodeURIComponent(directUrl)}` : '';
   const activeVideoSrc = useProxy ? proxyUrl : directUrl;
 
   const handleVideoError = () => {
     if (!useProxy && directUrl) {
-      // Automatically attempt playback via the streaming proxy
+      // Automatically attempt playback via streaming proxy
       console.warn('Direct stream blocked by CORS/CDN policy. Switching to streaming proxy...');
       setUseProxy(true);
     } else {
@@ -75,7 +69,7 @@ export const VideoPlayerPreview: React.FC<VideoPlayerPreviewProps> = ({
                 )}
                 <div className="relative z-10 space-y-2 max-w-sm">
                   <div className="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
-                    <AlertTriangle className="w-5 h-5" />
+                    <AlertTriangle className="w-5 h-5" aria-hidden="true" />
                   </div>
                   <p className="text-xs font-semibold text-slate-200">
                     Previsualización con reproductor seguro
@@ -84,13 +78,15 @@ export const VideoPlayerPreview: React.FC<VideoPlayerPreviewProps> = ({
                     El video se descargará directamente en tu dispositivo sin restricciones.
                   </p>
                   <button
+                    type="button"
                     onClick={() => {
                       setHasError(false);
                       setUseProxy(true);
                     }}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition shadow-sm"
+                    aria-label="Reintentar reproducción con servidor proxy"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition-colors duration-150 shadow-sm"
                   >
-                    <RefreshCw className="w-3 h-3" />
+                    <RefreshCw className="w-3 h-3" aria-hidden="true" />
                     <span>Reintentar reproductor</span>
                   </button>
                 </div>

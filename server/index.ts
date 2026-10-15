@@ -3,7 +3,6 @@ import cors from 'cors';
 import fs from 'node:fs';
 import { extractUniversalVideo, SAMPLE_TWEETS } from './extractor';
 import { processVideoTrim } from './trimmer';
-import { searchVideos, getSearchSuggestions, CATEGORY_PRESETS } from './searchEngine';
 
 const app = express();
 const PORT = process.env.PORT || 3005;
@@ -19,69 +18,16 @@ app.get('/api/health', (_req, res) => {
 // Version check endpoint for update notifications
 app.get('/api/version', (_req, res) => {
   res.json({
-    version: '2.6.0',
-    title: 'Arquitectura Serverless 100% Blindada y Alta Disponibilidad',
-    releaseDate: '2026-10-10',
+    version: '3.0.0',
+    title: 'Descargador de Videos Ultra Rápido y Optimizado',
+    releaseDate: '2026-10-15',
     notes: [
-      'Eliminado error 500 del servidor con arquitectura serverless autónoma',
-      'Timeout seguro y contingencia garantizada con HTTP 200 siempre',
-      'Compatibilidad total en Vercel, móviles y ordenadores de escritorio',
-      'Paginación fluida y carga continua de videos sin interrupciones',
+      'Modo exclusivo de descargas de alta velocidad para Twitter / X',
+      'Eliminadas dependencias y sobrecarga para una carga instantánea',
+      'Extracción optimizada de videos hasta 1080p FHD y pistas de audio MP3',
+      'Previsualización fluida y recorte de clips con descarga directa',
     ],
   });
-});
-
-// Categories & Discovery Presets
-app.get('/api/search/categories', (_req, res) => {
-  res.json({ success: true, categories: CATEGORY_PRESETS });
-});
-
-// Auto-suggestions by query
-app.get('/api/search/suggestions', (req, res) => {
-  const query = (req.query.q as string) || '';
-  const isNsfw = req.query.nsfw === 'true';
-  const suggestions = getSearchSuggestions(query, isNsfw);
-  res.json({ success: true, suggestions });
-});
-
-// Advanced Video Search by Keywords / Tags
-app.get('/api/search', async (req, res) => {
-  try {
-    const query = (req.query.q as string) || '';
-    if (!query.trim()) {
-      res.status(400).json({ success: false, error: 'Se requiere un término de búsqueda o etiqueta.' });
-      return;
-    }
-
-    const platform = (req.query.platform as string) || 'all';
-    const duration = (req.query.duration as 'all' | 'short' | 'medium' | 'long') || 'all';
-    const sortBy = (req.query.sortBy as 'relevance' | 'views' | 'date' | 'duration_asc' | 'duration_desc') || 'relevance';
-    const nsfw = req.query.nsfw === 'true' || platform === 'nsfw';
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 24;
-
-    const data = await searchVideos({
-      query,
-      platform,
-      duration,
-      sortBy,
-      nsfw,
-      page,
-      limit,
-    });
-
-    res.json({
-      success: true,
-      query,
-      page: data.page,
-      hasMore: data.hasMore,
-      total: data.total,
-      results: data.results,
-    });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Error al realizar la búsqueda de videos.';
-    res.status(500).json({ success: false, error: message });
-  }
 });
 
 // Samples endpoint
@@ -97,7 +43,7 @@ app.get('/api/samples', (_req, res) => {
   res.json({ samples });
 });
 
-// Extract video metadata (Supports Twitter/X, YouTube, etc.)
+// Extract video metadata (Supports Twitter/X, etc.)
 app.post('/api/extract', async (req, res) => {
   try {
     const { url } = req.body;
@@ -161,13 +107,13 @@ app.get('/api/download', async (req, res) => {
         }
         res.write(value);
         streamNext();
-      } catch (err) {
+      } catch {
         res.end();
       }
     }
 
     streamNext();
-  } catch (err) {
+  } catch {
     res.status(500).send('Error interno en la descarga');
   }
 });
@@ -217,5 +163,5 @@ app.get('/api/trim', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`[Backend] Video Downloader & Search API corriendo en http://localhost:${PORT}`);
+  console.log(`[Backend] Twitter Video Downloader API corriendo en http://localhost:${PORT}`);
 });

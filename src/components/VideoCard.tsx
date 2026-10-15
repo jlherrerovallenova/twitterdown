@@ -161,6 +161,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({ data, onDownloadCompleted 
         <div className="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-slate-50/30">
           <div className="lg:col-span-6">
             <VideoPlayerPreview
+              key={selectedFormat?.id || selectedFormat?.url || 'preview'}
               selectedFormat={selectedFormat}
               thumbnail={data.thumbnail}
               duration={data.duration}

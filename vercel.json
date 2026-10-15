@@ -2,18 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "source": "/api/search/categories",
-      "destination": "/api/categories"
-    },
-    {
-      "source": "/api/search/suggestions",
-      "destination": "/api/suggestions"
-    },
-    {
-      "source": "/api/search",
-      "destination": "/api/search"
-    },
-    {
       "source": "/api/version",
       "destination": "/api/version"
     },

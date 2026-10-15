@@ -24,7 +24,7 @@ export const SmartClipboardBanner: React.FC<SmartClipboardBannerProps> = ({
         return;
       }
 
-      // Check permission state first if supported to avoid "string did not match pattern" or security errors
+      // Check permission state first if supported to avoid security errors
       if (navigator.permissions && typeof navigator.permissions.query === 'function') {
         try {
           const perm = await navigator.permissions.query({ name: 'clipboard-read' as any });
@@ -32,11 +32,9 @@ export const SmartClipboardBanner: React.FC<SmartClipboardBannerProps> = ({
             return;
           }
         } catch {
-          // Permissions API for clipboard-read unsupported or blocked; avoid automatic readText
           return;
         }
       } else {
-        // Without explicit permission API, do not auto-read on mount to avoid DOMException
         return;
       }
 
@@ -105,7 +103,7 @@ export const SmartClipboardBanner: React.FC<SmartClipboardBannerProps> = ({
           <div className="w-9 h-9 rounded-xl bg-sky-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-sky-500/20">
             <ClipboardCheck className="w-5 h-5" aria-hidden="true" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 text-left">
             <p className="text-xs font-bold text-sky-950 flex items-center gap-1.5">
               <span>Enlace detectado en tu portapapeles</span>
               <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" aria-hidden="true" />
@@ -130,10 +128,10 @@ export const SmartClipboardBanner: React.FC<SmartClipboardBannerProps> = ({
             type="button"
             onClick={handleDismiss}
             aria-label="Descartar aviso de portapapeles"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors duration-150"
             title="Descartar"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
